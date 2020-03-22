@@ -59,9 +59,9 @@ import anywheresoftware.b4a.objects.streams.File;
  *<b>Should be a process global variable.</b>
  */
 @ShortName("SimpleExoPlayer")
-@Version(1.30f)
-@DependsOn(values={"exoplayer-core-2.10.2.aar", "exoplayer-dash-2.10.2.aar", "exoplayer-hls-2.10.2.aar", 
-		"exoplayer-2.10.2.aar", "exoplayer-smoothstreaming-2.10.2.aar", "exoplayer-ui-2.10.2.aar", "extension-rtmp-2.10.2.aar", "exoplayer_desugar.jar"})
+@Version(1.40f)
+@DependsOn(values={"exoplayer-core-2.11.3.aar", "exoplayer-dash-2.11.3.aar", "exoplayer-hls-2.11.3.aar", 
+		"exoplayer-2.11.3.aar", "exoplayer-smoothstreaming-2.11.3.aar", "exoplayer-ui-2.11.3.aar", "extension-rtmp-2.11.3.aar", "exoplayer_desugar.jar"})
 @Permissions(values = {"android.permission.INTERNET"})
 @Events(values = {"Complete", "Error (Message As String)", "Ready", "TrackChanged"})
 public class SimpleExoPlayerWrapper  {
@@ -136,6 +136,24 @@ public class SimpleExoPlayerWrapper  {
 
 			@Override
 			public void onTimelineChanged(Timeline arg0, Object arg1, int arg2) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onIsPlayingChanged(boolean arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onPlaybackSuppressionReasonChanged(int arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onTimelineChanged(Timeline arg0, int arg1) {
 				// TODO Auto-generated method stub
 				
 			}
