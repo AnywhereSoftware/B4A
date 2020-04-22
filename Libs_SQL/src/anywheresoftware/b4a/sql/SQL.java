@@ -54,7 +54,7 @@ public class SQL implements CheckForReinitialize{
 	 *IMPORTANT: this object should be declared in Sub Process_Globals.
 	 *Example:<code>
 	 *Dim SQL1 As SQL
-	 *SQL1.Initialize(File.InternalDir, "MyDb.db", True)</code>
+	 *SQL1.Initialize(File.DirInternal, "MyDb.db", True)</code>
 	 */
 	public void Initialize(String Dir, String FileName, boolean CreateIfNecessary) {
 		db = SQLiteDatabase.openDatabase(new File(Dir, FileName).toString(), null, 
@@ -472,7 +472,7 @@ public class SQL implements CheckForReinitialize{
 		/**
 		 * Moves the cursor to the next result. Returns false when the cursor reaches the end.
 		 *Example:<code>
-		 *Do While ResultSet1.Next
+		 *Do While ResultSet1.NextRow
 		 * 'Work with Row
 		 *Loop</code>
 		 */

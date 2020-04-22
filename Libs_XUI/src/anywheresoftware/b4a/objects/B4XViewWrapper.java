@@ -34,6 +34,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.Drawable.ConstantState;
@@ -74,7 +75,7 @@ import anywheresoftware.b4a.objects.streams.File;
 @CustomClasses(values = {
 		@CustomClass(fileNameWithoutExtension="customview", name="Custom View (XUI)")	
 	})
-@Version(1.92f)
+@Version(2.00f)
 @ShortName("B4XView")
 @ActivityObject
 public class B4XViewWrapper extends AbsObjectWrapper<Object>{
@@ -373,6 +374,13 @@ public class B4XViewWrapper extends AbsObjectWrapper<Object>{
 	 */
 	public void SetBitmap(Bitmap Bitmap) {
 		asViewWrapper().SetBackgroundImageNew(Bitmap).setGravity(Gravity.CENTER);
+	}
+	public B4XBitmapWrapper GetBitmap() {
+		B4XBitmapWrapper res = new B4XBitmapWrapper();
+		Drawable d = getViewObject().getBackground();
+		if (d instanceof BitmapDrawable)
+			res.setObject(((BitmapDrawable)d).getBitmap());
+		return res;
 	}
 
 	private RuntimeException typeDoesNotMatch() {

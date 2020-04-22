@@ -32,11 +32,12 @@ import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.Permissions;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
+import anywheresoftware.b4a.objects.collections.Map;
 
 /**
  * Implementation of a WebSocket client.
  */
-@Version(2.10f)
+@Version(2.11f)
 @ShortName("WebSocket")
 @Events(values={"Connected", "Closed (Reason As String)", "TextMessage (Message As String)", "BinaryMessage (Data() As Byte)"})
 @Permissions(values={"android.permission.INTERNET"})
@@ -48,6 +49,7 @@ public class WebSocketWrapper {
 
 	@Hide
 	public WebSocketConnection wsc;
+	public Map Headers;
 	/**
 	 * Initializes the object and sets the subs that will handle the events.
 	 */
@@ -57,6 +59,8 @@ public class WebSocketWrapper {
 		wsc = new WebSocketConnection();
 		options = new WebSocketOptions();
 		options.setSocketConnectTimeout(30000);
+		Headers = new Map();
+		Headers.Initialize();
 		
 	}
 	/**
@@ -68,9 +72,10 @@ public class WebSocketWrapper {
 	/**
 	 * Tries to connect to the given Url. The Url should start with ws:// or wss://.
 	 */
+	@SuppressWarnings("unchecked")
 	public void Connect(String Url) throws WebSocketException {
 		
-		wsc.connect(Url, new ConnectionHandler() {
+		wsc.connect(Url, null, new ConnectionHandler() {
 
 			@Override
 			public void onBinaryMessage(byte[] payload) {
@@ -99,7 +104,7 @@ public class WebSocketWrapper {
 				ba.raiseEvent(WebSocketWrapper.this, eventName + "_textmessage", payload);
 			}
 			
-		}, options);
+		}, options, (java.util.Map)Headers.getObject());
 	}
 	/**
 	 * Checks whether the connection is open.

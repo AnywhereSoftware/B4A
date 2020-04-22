@@ -25,6 +25,7 @@ import java.net.DatagramSocket;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -67,7 +68,7 @@ import anywheresoftware.b4a.BA.Version;
  *Once a socket is connected you should use its <code>InputStream</code> and <code>OutputStream</code> to communicate with the other machine.
  */
 @ShortName("Socket")
-@Version(1.51f)
+@Version(1.52f)
 @Events(values = {"Connected (Successful As Boolean)"})
 @Permissions(values = {"android.permission.INTERNET"})
 public class SocketWrapper implements CheckForReinitialize{
@@ -484,6 +485,32 @@ public class SocketWrapper implements CheckForReinitialize{
 		public int getPort() {
 			return ds.getLocalPort();
 		}
+		
+		/**
+		 * Returns the network broadcast address.
+		 *Note that the loopback broadcast address is 127.255.255.255.
+		 */
+		public String GetBroadcastAddress() throws SocketException {
+			Enumeration<NetworkInterface> interfaces =
+					NetworkInterface.getNetworkInterfaces();
+			for (boolean ip6 : new boolean[] {false, true}) {
+				while (interfaces.hasMoreElements()) {
+					NetworkInterface networkInterface = interfaces.nextElement();
+					if (networkInterface.isLoopback())
+						continue;    
+					for (InterfaceAddress interfaceAddress :
+						networkInterface.getInterfaceAddresses()) {
+						InetAddress broadcast = interfaceAddress.getBroadcast();
+						if (broadcast == null)
+							continue;
+						if (broadcast instanceof Inet6Address == ip6)
+							return broadcast.getHostAddress();
+					}
+				}
+			}
+			return "";
+		}
+		
 		/**
 		 * Sends a Packet. The packet will be sent in the background (asynchronously).
 		 */
@@ -496,7 +523,7 @@ public class SocketWrapper implements CheckForReinitialize{
 						Packet.getObject().packet.setSocketAddress(new InetSocketAddress(Packet.getObject().host, Packet.getObject().port));
 						ds.send(Packet.getObject().packet);
 					} catch (Exception e) {
-						Log.w("B4A", "", e);
+						BA.LogError(e.toString());
 						throw new RuntimeException(e);
 					}
 				}
