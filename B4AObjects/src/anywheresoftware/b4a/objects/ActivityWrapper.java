@@ -108,14 +108,14 @@ public class ActivityWrapper extends ViewWrapper<BALayout> implements IterableLi
 	 */
 	public IntentWrapper GetStartingIntent() {
 		IntentWrapper iw = new IntentWrapper();
-		iw.setObject(ba.activity.getIntent());
+		iw.setObject(getActivity().getIntent());
 		return iw;
 	}
 	/**
 	 * (Advanced) Sets the result that the calling Activity will get after calling StartActivityForResult.
 	 */
 	public void SetActivityResult(int Result, IntentWrapper Data) {
-		ba.activity.setResult(Result, Data.getObject());
+		getActivity().setResult(Result, Data.getObject());
 	}
 	/**
 	 * Adds a view to this activity.
@@ -197,7 +197,7 @@ public class ActivityWrapper extends ViewWrapper<BALayout> implements IterableLi
 			d = bd.getObject();
 		}
 		B4AMenuItem mi = new B4AMenuItem(Title, d, EventName, AddToActionBar);
-		((B4AActivity)ba.activity).addMenuItem(mi);
+		((B4AActivity)getActivity()).addMenuItem(mi);
 	}
 	/**
 	 * Loads a layout file (.bal).
@@ -223,33 +223,36 @@ public class ActivityWrapper extends ViewWrapper<BALayout> implements IterableLi
 		}
 		LayoutBuilder.loadLayout(Layout, ba, false, vg, dynamicTable, false);
 	}
+	private Activity getActivity() {
+		return (Activity)getObject().getContext();
+	}
 	/**
 	 * Programmatically opens the menu.
 	 */
 	public void OpenMenu() {
-		ba.activity.openOptionsMenu();
+		getActivity().openOptionsMenu();
 	}
 	/**
 	 * Programmatically closes the menu.
 	 */
 	public void CloseMenu() {
-		ba.activity.closeOptionsMenu();
+		getActivity().closeOptionsMenu();
 	}
 	
 	public void setTitle(CharSequence Title) {
-		ba.activity.setTitle(Title);
+		getActivity().setTitle(Title);
 	}
 	public CharSequence getTitle() {
-		return ba.activity.getTitle();
+		return getActivity().getTitle();
 	}
 	/**
 	 * Gets or sets the title color. This property is only supported by Android 2.x devices. It will not do anything on newer devices.
 	 */
 	public int getTitleColor() {
-		return ba.activity.getTitleColor();
+		return getActivity().getTitleColor();
 	}
 	public void setTitleColor(int Color) {
-		ba.activity.setTitleColor(Color);
+		getActivity().setTitleColor(Color);
 	}
 	/**
 	 * This method was added as a workaround for the following <link>Android bug|https://code.google.com/p/android/issues/detail?id=55933</link>.
@@ -313,7 +316,7 @@ public class ActivityWrapper extends ViewWrapper<BALayout> implements IterableLi
 	 * Closes this activity.
 	 */
 	public void Finish() {
-		ba.activity.finish();
+		getActivity().finish();
 	}
 	/**
 	 * Returns an iterator that iterates over all the child views including views that were added to other child views.

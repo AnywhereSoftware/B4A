@@ -65,7 +65,7 @@ import anywheresoftware.b4a.objects.collections.Map.MyMap;
  *A short tutorial about the encryption methods is available <link>here|http://www.basic4ppc.com/forum/basic4android-getting-started-tutorials/11565-encryptying-information-randomaccessfile-library.html</link>.
  */
 @ShortName("RandomAccessFile")
-@Version(2.32f)
+@Version(2.33f)
 public class RandomAccessFile {
 	private FileChannel channel;
 	private ByteBuffer bb4;
@@ -565,7 +565,7 @@ public class RandomAccessFile {
 	public static Class<?> readTypeClass(String className) throws ClassNotFoundException {
 		Class<?> c;
 		try {
-			if (correctedClasses != null && correctedClasses.containsKey(className))
+			if (correctedClasses.containsKey(className))
 				className = correctedClasses.get(className);
 			c = Class.forName(className);
 		} catch (ClassNotFoundException cnfe) {
@@ -576,7 +576,12 @@ public class RandomAccessFile {
 			else 
 				corrected = BA.packageName + ".main$" + className; //from b4i
 			//BA.Log("Class not found: " + className + ", trying: " + corrected);
-			c = Class.forName(corrected);
+			try {
+				c = Class.forName(corrected);
+			} catch (ClassNotFoundException cnfe2) {
+				corrected = corrected.replace(".main$", ".b4xmainpage$");
+				c = Class.forName(corrected);
+			}
 			correctedClasses.put(className, corrected);
 		}
 		return c;

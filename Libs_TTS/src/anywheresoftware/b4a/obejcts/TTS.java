@@ -31,7 +31,7 @@ import anywheresoftware.b4a.BA.Version;
  *After initializing the object you should wait for the Ready event.
  *See this <link>example|http://www.basic4ppc.com/forum/basic4android-getting-started-tutorials/7043-android-text-speech-example.html</link>.
  */
-@Version(1.0f)
+@Version(1.01f)
 @ShortName("TTS")
 @Events(values={"Ready (Success As Boolean)"})
 public class TTS extends AbsObjectWrapper<TextToSpeech> {
@@ -45,7 +45,7 @@ public class TTS extends AbsObjectWrapper<TextToSpeech> {
 
 			@Override
 			public void onInit(int status) {
-				ba.raiseEvent(null, EventName.toLowerCase(BA.cul) + "_ready", status == TextToSpeech.SUCCESS);
+				ba.raiseEventFromUI(null, EventName.toLowerCase(BA.cul) + "_ready", status == TextToSpeech.SUCCESS);
 			}
 			
 		});

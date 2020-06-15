@@ -79,6 +79,7 @@ public class Map extends AbsObjectWrapper<Map.MyMap> implements B4aDebuggable{
 		getObject().clear();
 	}
 	/**
+	 *<b>This method is deprecated. Use For Each to iterate over the keys or use B4XOrderedMap.</b>
 	 * Returns the key of the item at the given index.
 	 *GetKeyAt and GetValueAt should be used to iterate over all the items.
 	 *These methods are optimized for iterating over the items in ascending order.
@@ -92,6 +93,7 @@ public class Map extends AbsObjectWrapper<Map.MyMap> implements B4aDebuggable{
 		return getObject().getKey(Index);
 	}
 	/**
+	 *<b>This method is deprecated. Use For Each to iterate over the values or use B4XOrderedMap.</b>
 	 * Returns the value of the item at the given index.
 	 *GetKeyAt and GetValueAt should be used to iterate over all the items.
 	 *These methods are optimized for iterating over the items in ascending order.

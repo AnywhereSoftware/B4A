@@ -28,10 +28,11 @@ import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.DependsOn;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
-import anywheresoftware.b4a.objects.collections.List;
+import anywheresoftware.b4a.objects.RuntimePermissions.RequestHandler;
 
+//don't forget to jetify!
 @ShortName("RuntimePermissions")
-@Version(1.10f)
+@Version(1.12f)
 @DependsOn(values={"com.android.support:support-v4"})
 /**
  *This type is compatible with all versions of Android. It allows your app to use the new permissions system that was introduced in Android 6 (API 23).
@@ -101,7 +102,7 @@ public class RuntimePermissions {
 			}
 			reqHandler.permissions.add(Permission);
 		} else {
-			ba.raiseEventFromDifferentThread(null,null, 0, "activity_permissionresult", true, new Object[] {Permission, result});
+			aba.processBA.raiseEventFromDifferentThread(null,null, 0, "activity_permissionresult", true, new Object[] {Permission, result});
 		}
 	}
 	/**
@@ -135,7 +136,7 @@ public class RuntimePermissions {
 			return new String[0];
 		String[] s = new String[f.length];
 		for (int i = 0;i < f.length;i++)
-			s[i] = f[i].toString();
+			s[i] = f[i] == null ? "" : f[i].toString();
 		return s;
 	}
 }

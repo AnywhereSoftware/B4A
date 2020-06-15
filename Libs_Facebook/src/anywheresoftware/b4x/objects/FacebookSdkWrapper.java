@@ -54,10 +54,10 @@ import anywheresoftware.b4a.objects.LabelWrapper;
 import anywheresoftware.b4a.objects.PanelWrapper;
 import anywheresoftware.b4a.objects.collections.Map;
 
-@Version(1.01f)
+@Version(1.02f)
 @ShortName("FacebookSdk")
 @Permissions(values={"android.permission.INTERNET"})
-@DependsOn(values={"facebook-core-5.5.0.aar", "facebook-login-5.5.0.aar",  "facebook-common-5.5.0.aar", "com.android.support:cardview-v7"})
+@DependsOn(values={"facebook-core-7.0.0.aar", "facebook-login-7.0.0.aar",  "facebook-common-7.0.0.aar", "com.android.support:cardview-v7"})
 public class FacebookSdkWrapper {
 	@Hide
 	public FacebookSdk sdk;

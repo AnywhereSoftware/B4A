@@ -55,7 +55,7 @@ import anywheresoftware.b4a.BA.ShortName;
 @ShortName("FirebaseAuth")
 @DependsOn(values={"com.google.firebase:firebase-auth", "com.google.android.gms:play-services-auth", "com.google.firebase:firebase-core"})
 @Events(values={"SignedIn (User As FirebaseUser)", "TokenAvailable (User As FirebaseUser, Success As Boolean, TokenId As String)"})
-@Version(1.06f)
+@Version(1.07f)
 public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFailedListener{
 	@Hide
 	public GoogleApiClient googleClient;
@@ -204,7 +204,7 @@ public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFa
 	@ShortName("FirebaseUser")
 	public static class FirebaseUserWrapper extends AbsObjectWrapper<FirebaseUser> {
 		public String getEmail() {
-			return getObject().getEmail();
+			return BA.returnString(getObject().getEmail());
 		}
 		public String getDisplayName() {
 			return getObject().getDisplayName();
