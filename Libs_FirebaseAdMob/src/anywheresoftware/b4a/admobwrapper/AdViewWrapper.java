@@ -42,7 +42,7 @@ import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 
-@Version(1.60f)
+@Version(2.00f)
 @ShortName("AdView")
 @Events(values={"ReceiveAd", "FailedToReceiveAd (ErrorCode As String)",
 		"AdScreenDismissed", "PresentScreen"})

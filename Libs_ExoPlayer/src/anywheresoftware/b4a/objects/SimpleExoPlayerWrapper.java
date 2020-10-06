@@ -59,7 +59,7 @@ import anywheresoftware.b4a.objects.streams.File;
  *<b>Should be a process global variable.</b>
  */
 @ShortName("SimpleExoPlayer")
-@Version(1.40f)
+@Version(1.42f)
 @DependsOn(values={"exoplayer-core-2.11.3.aar", "exoplayer-dash-2.11.3.aar", "exoplayer-hls-2.11.3.aar", 
 		"exoplayer-2.11.3.aar", "exoplayer-smoothstreaming-2.11.3.aar", "exoplayer-ui-2.11.3.aar", "extension-rtmp-2.11.3.aar", "exoplayer_desugar.jar"})
 @Permissions(values = {"android.permission.INTERNET"})
@@ -235,6 +235,13 @@ public class SimpleExoPlayerWrapper  {
 		} catch (NameNotFoundException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	/**
+	 * Returns true if the player is currently playing.
+	 */
+	public boolean getIsPlaying() {
+		return player.isPlaying();
 	}
 	/**
 	 * Prepares the media source. The Ready event will be raised when the playback is ready. You can call play immediately after calling this method.

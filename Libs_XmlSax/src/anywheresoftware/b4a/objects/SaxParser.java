@@ -34,6 +34,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.Events;
+import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.RaisesSynchronousEvents;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
@@ -58,7 +59,8 @@ import anywheresoftware.b4a.objects.collections.List;
 		"EndElement (Uri As String, Name As String, Text As StringBuilder)"})
 @Version(1.11f)
 public class SaxParser {
-	private SAXParser sp;
+	@Hide
+	public SAXParser sp;
 	private String eventName;
 	private BA ba;
 	/**

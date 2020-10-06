@@ -16,11 +16,6 @@
 
 package anywheresoftware.b4a.objects;
 
-import android.text.TextUtils;
-import android.util.Base64;
-import anywheresoftware.b4a.BA.Hide;
-
-import com.android.billingclient.util.BillingHelper;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -31,9 +26,13 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
+import android.text.TextUtils;
+import android.util.Base64;
+import anywheresoftware.b4a.BA;
+import anywheresoftware.b4a.BA.Hide;
+
 @Hide
 public class Checker {
-    private static final String TAG = "IABUtil/Security";
 
     private static final String KEY_FACTORY_ALGORITHM = "RSA";
     private static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
@@ -51,7 +50,7 @@ public class Checker {
             String signature) throws IOException {
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey)
                 || TextUtils.isEmpty(signature)) {
-            BillingHelper.logWarn(TAG, "Purchase verification failed: missing data.");
+            BA.LogInfo("Purchase verification failed: missing data.");
             return false;
         }
 
@@ -76,7 +75,7 @@ public class Checker {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
             String msg = "Invalid key specification: " + e;
-            BillingHelper.logWarn(TAG, msg);
+            BA.LogInfo(msg);
             throw new IOException(msg);
         }
     }
@@ -95,7 +94,7 @@ public class Checker {
         try {
             signatureBytes = Base64.decode(signature, Base64.DEFAULT);
         } catch (IllegalArgumentException e) {
-            BillingHelper.logWarn(TAG, "Base64 decoding failed.");
+        	 BA.LogInfo("Base64 decoding failed.");
             return false;
         }
         try {
@@ -103,7 +102,7 @@ public class Checker {
             signatureAlgorithm.initVerify(publicKey);
             signatureAlgorithm.update(signedData.getBytes());
             if (!signatureAlgorithm.verify(signatureBytes)) {
-                BillingHelper.logWarn(TAG, "Signature verification failed.");
+            	 BA.LogInfo("Signature verification failed.");
                 return false;
             }
             return true;
@@ -111,9 +110,9 @@ public class Checker {
             // "RSA" is guaranteed to be available.
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
-            BillingHelper.logWarn(TAG, "Invalid key specification.");
+        	 BA.LogInfo("Invalid key specification.");
         } catch (SignatureException e) {
-            BillingHelper.logWarn(TAG, "Signature exception.");
+        	 BA.LogInfo("Signature exception.");
         }
         return false;
     }

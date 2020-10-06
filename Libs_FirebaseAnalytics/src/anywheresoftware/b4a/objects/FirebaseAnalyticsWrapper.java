@@ -33,7 +33,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 @ShortName("FirebaseAnalytics")
-@Version(1.12f)
+@Version(2.00f)
 @DependsOn(values={"com.google.firebase:firebase-crash", "com.google.firebase:firebase-analytics", 
 					"com.google.firebase:firebase-core"})
 public class FirebaseAnalyticsWrapper extends AbsObjectWrapper<FirebaseAnalytics>{

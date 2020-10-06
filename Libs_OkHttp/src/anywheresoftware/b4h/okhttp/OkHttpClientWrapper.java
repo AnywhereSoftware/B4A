@@ -76,10 +76,10 @@ import anywheresoftware.b4a.objects.streams.File;
  */
 @Events(values={"ResponseSuccess (Response As OkHttpResponse, TaskId As Int)",
 "ResponseError (Response As OkHttpResponse, Reason As String, StatusCode As Int, TaskId As Int)"})
-@DependsOn(values={"okhttp-3.5.0", "okio-1.11.0"})
+@DependsOn(values={"okhttp-3.12.12", "okio-1.17.5"})
 @ShortName("OkHttpClient")
 @Permissions(values = {"android.permission.INTERNET"})
-@Version(1.22f)
+@Version(1.31f)
 public class OkHttpClientWrapper {
 	@Hide
 	public OkHttpClient client;

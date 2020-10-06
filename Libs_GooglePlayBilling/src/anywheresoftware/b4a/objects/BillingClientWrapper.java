@@ -64,8 +64,8 @@ import anywheresoftware.b4a.BA.Version;
 		"ConsumeCompleted (Result As BillingResult)",
 "AcknowledgeCompleted (Result As BillingResult)"})
 @Permissions(values= {"com.android.vending.BILLING"})
-@Version(1.0f)
-@DependsOn(values = { "billing-2.0.3.aar" })
+@Version(1.10f)
+@DependsOn(values = { "billing-3.0.1.aar" })
 @ShortName("BillingClient")
 public class BillingClientWrapper {
 	private String eventName;
@@ -198,9 +198,9 @@ public class BillingClientWrapper {
 	 * Consumes a product. It will not be "owned" after this call.
 	 * 
 	 */
-	public Object Consume(final BA ba, String PurchaseToken, String DeveloperPayload) {
+	public Object Consume(final BA ba, String PurchaseToken, String Unused) {
 		final Object sender = new Object();
-		client.consumeAsync(ConsumeParams.newBuilder().setDeveloperPayload(DeveloperPayload).setPurchaseToken(PurchaseToken).build(),
+		client.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
 				new ConsumeResponseListener() {
 
 			@Override
@@ -213,13 +213,13 @@ public class BillingClientWrapper {
 	/**
 	 * All purchases must be acknowledged or consumed in 3 days. Call this method to acknowledge the purchase.
 	 *PurchaseToken - The token as retrieved with Purchase.PurchaseToken.
-	 *DeveloperPayload - Optional string that you can set and will be attached to this purchase. 
+	 *Unused - (developer payload value is no longer supported).
 	 *
 	 *<code>Wait For (Billing.AcknowledgePurchase(p.PurchaseToken, "")) Billing_AcknowledgeCompleted (Result As BillingResult)</code>
 	 */
-	public Object AcknowledgePurchase(final BA ba, String PurchaseToken, String DeveloperPayload) {
+	public Object AcknowledgePurchase(final BA ba, String PurchaseToken, String Unused) {
 		final Object sender = new Object();
-		client.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setDeveloperPayload(DeveloperPayload).setPurchaseToken(PurchaseToken).build(), 
+		client.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(PurchaseToken).build(), 
 				new AcknowledgePurchaseResponseListener() {
 
 			@Override
@@ -238,7 +238,7 @@ public class BillingClientWrapper {
 				.getResponseCode() == BillingResponseCode.OK;
 	}
 	/**
-	 * Starts the billing flow. Returns a BillingResult. The PurchasesUpdated event will be raised if a purchase was done (successfully or unsuccessfull).
+	 * Starts the billing flow. Returns a BillingResult. The PurchasesUpdated event will be raised if a purchase was done (successfully or unsuccessfully).
 	 *This method must be called from an Activity.
 	 *<code>
 	 *Result = Starter.Billing.LaunchBillingFlow(SkuDetails.Get(0))
@@ -388,7 +388,7 @@ public class BillingClientWrapper {
 			return getObject().getPurchaseState();
 		}
 		/**
-		 * Returns the developer payload that is set when calling Consume or AcknowledgePurchase.
+		 * Deprecated.
 		 */
 		public String getDeveloperPayload() {
 			return BA.returnString(getObject().getDeveloperPayload());
