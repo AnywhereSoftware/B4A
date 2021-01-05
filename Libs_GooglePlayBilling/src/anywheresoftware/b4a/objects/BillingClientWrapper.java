@@ -239,7 +239,7 @@ public class BillingClientWrapper {
 	}
 	/**
 	 * Starts the billing flow. Returns a BillingResult. The PurchasesUpdated event will be raised if a purchase was done (successfully or unsuccessfully).
-	 *This method must be called from an Activity.
+	 *This method must be called from an Activity or a class with an activity context.
 	 *<code>
 	 *Result = Starter.Billing.LaunchBillingFlow(SkuDetails.Get(0))
 	 *Log("LaunchBillingFlow: " & Result.IsSuccess)</code>

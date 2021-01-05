@@ -1129,7 +1129,7 @@ public class Phone {
 		/**
 		 * Initializes the object and sets the sensor type and sensor events rate.
 		 *SensorType - One of the TYPE_ constants.
-		 *SensorDelay - A value between 1 (fastest rate) to 3 (slowest rate). This is only a hint to the system.
+		 *SensorDelay - A value between 0 (fastest rate) to 3 (slowest rate). This is only a hint to the system.
 		 */
 		public void Initialize2(int SensorType, int SensorDelay) {
 			this.currentType = SensorType;

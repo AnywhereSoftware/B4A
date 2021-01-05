@@ -39,6 +39,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.Drawable.ConstantState;
 import android.os.Build;
+import android.text.Selection;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -75,7 +76,7 @@ import anywheresoftware.b4a.objects.streams.File;
 @CustomClasses(values = {
 		@CustomClass(fileNameWithoutExtension="customview", name="Custom View (XUI)")	
 	})
-@Version(2.00f)
+@Version(2.10f)
 @ShortName("B4XView")
 @ActivityObject
 public class B4XViewWrapper extends AbsObjectWrapper<Object>{
@@ -623,8 +624,21 @@ public class B4XViewWrapper extends AbsObjectWrapper<Object>{
 		v.setPivotX(getWidth() / 2);
 		v.setPivotY(getHeight() / 2);
 	}
-	
-	
+	public void setSelectionStart(int s) {
+		SetSelection(s, 0);
+	}
+	public int getSelectionStart() {
+		return Selection.getSelectionStart(((EditText)getObject()).getText());
+	}
+	public int getSelectionLength() {
+		return Math.max(0, Selection.getSelectionEnd(((EditText)getObject()).getText()) - getSelectionStart());
+	}
+	public void SetSelection(int Start, int Length) {
+		Selection.setSelection(((EditText)getObject()).getText(), Start, Start + Length);
+	}
+	public void SelectAll() {
+		Selection.selectAll(((EditText)getObject()).getText());
+	}
 
 
 	@ShortName("B4XBitmap")
