@@ -601,6 +601,9 @@ public class BA {
 	}
 	public static void addLogPrefix(String prefix, String message) {
 		prefix = "~" + prefix + ":";
+		if (message == null) {
+			message = "(null string)";
+		}
 		if (message.length() < 3900) {
 			StringBuilder sb = new StringBuilder();
 			for (String line : message.split("\\n")) {

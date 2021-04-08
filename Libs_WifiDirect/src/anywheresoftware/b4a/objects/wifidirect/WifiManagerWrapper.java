@@ -37,13 +37,14 @@ import anywheresoftware.b4a.BA.Permissions;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.keywords.Common;
+import anywheresoftware.b4a.objects.IntentWrapper;
 import anywheresoftware.b4a.objects.collections.List;
 
 /**
  * Allows you to connect two devices over a Wifi Direct connection.
  *See this <link>tutorial|http://www.basic4ppc.com/forum/basic4android-getting-started-tutorials/30409-android-wifi-direct-tutorial.html</link> for more information.
  */
-@Version(1.05f)
+@Version(1.06f)
 @Permissions(values={"android.permission.ACCESS_WIFI_STATE",
 		"android.permission.CHANGE_WIFI_STATE",
 		"android.permission.CHANGE_NETWORK_STATE",
@@ -51,7 +52,7 @@ import anywheresoftware.b4a.objects.collections.List;
 "android.permission.ACCESS_NETWORK_STATE"})
 @ShortName("WifiManager")
 @Events(values={"EnabledChanged (Enabled As Boolean)", "PeersDiscovered (Success As Boolean, Devices As List)",
-		"ConnectionChanged (Connected As Boolean, GroupOwnerIp As String)"})
+		"ConnectionChanged (Connected As Boolean, GroupOwnerIp As String)", "IntentReceived (Intent As Intent)"})
 public class WifiManagerWrapper {
 	private String eventName;
 	private WifiP2pManager manager;
@@ -149,6 +150,7 @@ public class WifiManagerWrapper {
 			String action = intent.getAction();
 			if (action == null)
 				return;
+			ba.raiseEvent(WifiManagerWrapper.this, eventName + "_intentreceived", AbsObjectWrapper.ConvertToWrapper(new IntentWrapper(), intent));
 			if (action.equals(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)) {
 				ba.raiseEvent(WifiManagerWrapper.this, eventName + "_enabledchanged", intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1) == 
 					WifiP2pManager.WIFI_P2P_STATE_ENABLED);

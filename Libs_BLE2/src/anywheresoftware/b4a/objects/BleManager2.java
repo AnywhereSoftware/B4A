@@ -51,7 +51,7 @@ import anywheresoftware.b4a.objects.collections.Map;
  * This library replaces the BLE library. It allows you to search for and connect to BLE devices.
  *It is supported by Android 4.3+ (API 18).
  */
-@Version(1.38f)
+@Version(1.39f)
 @ShortName("BleManager2")
 @Events(values={"StateChanged (State As Int)", "DeviceFound (Name As String, DeviceId As String, AdvertisingData As Map, RSSI As Double)",
 		"Disconnected", "Connected (Services As List)", "DataAvailable (ServiceId As String, Characteristics As Map)",
@@ -75,6 +75,10 @@ public class BleManager2 {
 	public static int STATE_POWERED_ON = BluetoothAdapter.STATE_ON, 
 			STATE_POWERED_OFF = BluetoothAdapter.STATE_OFF,
 			STATE_UNSUPPORTED = -9999;
+	
+	public boolean IsInitialized() {
+		return ba != null;
+	}
 	/**
 	 * Initializes the object. The StateChanged event will be raised after this method with the current BLE state.
 	 */

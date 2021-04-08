@@ -69,7 +69,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(9.90f)
+@Version(10.70f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -456,7 +456,7 @@ public class Common {
 	 * Shows a non-modal message box with the specified message and title.
 	 *The dialog will show one OK button.
 	 *Note that services cannot show dialogs.
-	 *You can use Wait For to wait for the Msgbox_Result event if you want to continue the code flow after the dialog is dismissed.
+	 *You can use Wait For to wait for the Msgbox_Result event, if you want to continue the code flow after the dialog is dismissed.
 	 *Example:<code>
 	 *MsgboxAsync("Hello world", "This is the title")</code>
 	 */
@@ -1685,6 +1685,10 @@ public class Common {
 
 			@Override
 			public void run() {
+				if (ba == null) {
+					BA.LogError("Sleep failed to resume (ba = null)");
+					return;
+				}
 				boolean isActivity = ba.processBA != null;
 				if (isActivity) {
 					if (ba.processBA.sharedProcessBA.activityBA == null || ba != ba.processBA.sharedProcessBA.activityBA.get()) {//activity recreated

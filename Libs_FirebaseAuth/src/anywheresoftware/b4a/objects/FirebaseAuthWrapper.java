@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -54,8 +55,8 @@ import anywheresoftware.b4a.BA.ShortName;
 
 @ShortName("FirebaseAuth")
 @DependsOn(values={"com.google.firebase:firebase-auth", "com.google.android.gms:play-services-auth", "com.google.firebase:firebase-core"})
-@Events(values={"SignedIn (User As FirebaseUser)", "TokenAvailable (User As FirebaseUser, Success As Boolean, TokenId As String)"})
-@Version(2.00f)
+@Events(values={"SignedIn (User As FirebaseUser)", "TokenAvailable (User As FirebaseUser, Success As Boolean, TokenId As String)", "SignError (Error As Exception)"})
+@Version(2.01f)
 public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFailedListener{
 	@Hide
 	public GoogleApiClient googleClient;
@@ -64,12 +65,14 @@ public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFa
 	private IOnActivityResult ion;
 	private boolean signOut;
 	private String eventName;
+	private BA firstBA;
 	/**
 	 * Initializes the object. The SignedIn event will be raised if there is already a signed in user.  
 	 */
 	public void Initialize(final BA ba, String EventName) {
 		auth = FirebaseAuth.getInstance();
 		eventName = EventName.toLowerCase(BA.cul);
+		firstBA = ba;
 		auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
 			@Override
 			public void onAuthStateChanged(FirebaseAuth firebaseAuth) {
@@ -149,6 +152,8 @@ public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFa
 					firebaseAuthWithGoogle(act, account);
 				} else {
 					BA.LogInfo("ResultArrived Error: " +  result.getStatus() + ", " + result.getStatus().getStatusMessage());
+					firstBA.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, 
+							eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), new Exception(CommonStatusCodes.getStatusCodeString(result.getStatus().getStatusCode())))});
 				}
 			}
 
@@ -188,8 +193,10 @@ public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFa
 				BA.LogInfo("firebaseAuthWithGoogle success: " + task.isSuccessful());
 				if (task.isSuccessful())
 					BA.LogInfo("result: " + task.getResult());
-				else
+				else {
 					BA.LogInfo("error: " + task.getException());
+					firstBA.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), task.getException())});
+				}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

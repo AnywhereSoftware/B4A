@@ -64,7 +64,7 @@ import anywheresoftware.b4a.BA.Version;
 		"ConsumeCompleted (Result As BillingResult)",
 "AcknowledgeCompleted (Result As BillingResult)"})
 @Permissions(values= {"com.android.vending.BILLING"})
-@Version(1.10f)
+@Version(1.11f)
 @DependsOn(values = { "billing-3.0.1.aar" })
 @ShortName("BillingClient")
 public class BillingClientWrapper {

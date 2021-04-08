@@ -183,7 +183,7 @@ public class Phone {
 	 *The keys are lower cased.
 	 *Example:<code>
 	 *Dim p As Phone
-	 *Log(GetSettings("android_id"))</code>
+	 *Log(p.GetSettings("android_id"))</code>
 	 */
 	public static String GetSettings(String Settings) {
 		String s = Secure.getString(BA.applicationContext.getContentResolver(), Settings);

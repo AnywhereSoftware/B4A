@@ -36,58 +36,6 @@ import anywheresoftware.b4a.objects.streams.File;
 
 /**
  * AudioRecordApp lets you use the default audio recorder application to record audio.
- *After initializing the object you should call Record to start recording.
- *The RecordComplete event will be raised when record completes.
- *Example:<code>
- *Sub Process_Globals
- *	Dim audioRecorder As AudioRecordApp
- *	Dim videoRecorder As VideoRecordApp
- *End Sub
- *
- *Sub Globals
- *	Dim vv As VideoView
- *End Sub
- *
- *Sub Activity_Create(FirstTime As Boolean)
- *   If FirstTime Then
- *   		audioRecorder.Initialize("audioRecorder")
- *		videoRecorder.Initialize("videoRecorder")
- *	End If
- *	vv.Initialize("vv")
- *	Activity.AddView(vv, 0, 0, 100%x, 100%y)
- *	Activity.AddMenuItem("Record Video", "RecordVideo")
- *	Activity.AddMenuItem("Record Audio", "RecordAudio")
- *	ToastMessageShow("Press on Menu button...", True)
- *End Sub
- *
- *Sub RecordVideo_Click
- *	videoRecorder.Record(File.DirRootExternal, "1.mp4")
- *End Sub
- *Sub RecordAudio_Click
- *	audioRecorder.Record(File.DirRootExternal, "1.3gpp")
- *End Sub
- *Sub videoRecorder_RecordComplete (Success As Boolean)
- *	Log(Success)
- *	If Success Then
- *		vv.LoadVideo(File.DirRootExternal, "1.mp4")
- *		vv.Play
- *	End If
- *End Sub
- *Sub audioRecorder_RecordComplete (Success As Boolean)
- *	Log(Success)
- *	If Success Then
- *		vv.LoadVideo(File.DirRootExternal, "1.3gpp")
- *		vv.Play
- *	End If
- *End Sub
- *
- *Sub Activity_Resume
- *
- *End Sub
- *
- *Sub Activity_Pause (UserClosed As Boolean)
- *
- *End Sub</code>
  */
 @Permissions(values={"android.permission.WRITE_EXTERNAL_STORAGE"})
 @ShortName("AudioRecordApp")

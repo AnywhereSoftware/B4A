@@ -205,7 +205,7 @@ public class File {
 						new FileInputStream(new java.io.File(virtualAssetsFolder, FileName.toLowerCase(BA.cul)))));
 			}
 			else {
-				is.setObject(BA.applicationContext.getAssets().open(FileName.toLowerCase(BA.cul)));
+				is.setObject(BA.applicationContext.getAssets().open(FileName.toLowerCase(BA.cul).replace('/', '\\')));
 			}
 		}
 		else if (Dir.equals(ContentDir)) {
