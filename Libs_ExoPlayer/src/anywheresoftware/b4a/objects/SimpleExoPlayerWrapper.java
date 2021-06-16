@@ -21,10 +21,12 @@ import java.io.IOException;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -35,7 +37,6 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -59,9 +60,18 @@ import anywheresoftware.b4a.objects.streams.File;
  *<b>Should be a process global variable.</b>
  */
 @ShortName("SimpleExoPlayer")
-@Version(1.42f)
-@DependsOn(values={"exoplayer-core-2.11.3.aar", "exoplayer-dash-2.11.3.aar", "exoplayer-hls-2.11.3.aar", 
-		"exoplayer-2.11.3.aar", "exoplayer-smoothstreaming-2.11.3.aar", "exoplayer-ui-2.11.3.aar", "extension-rtmp-2.11.3.aar", "exoplayer_desugar.jar"})
+@Version(1.50f)
+@DependsOn(values={"exoplayer-2.13.3.aar", 
+		"exoplayer-common-2.13.3.aar", 
+		"exoplayer-core-2.13.3.aar", 
+		"exoplayer-dash-2.13.3.aar", 
+		"exoplayer-extractor-2.13.3.aar", 
+		"exoplayer-hls-2.13.3.aar", 
+		"exoplayer-smoothstreaming-2.13.3.aar", 
+		"exoplayer-ui-2.13.3.aar", 
+		"extension-rtmp-2.13.3.aar", 
+		"exoplayer_desugar.jar", "androidx.media:media", "androidx.recyclerview:recyclerview", 
+		"guava-30.1.1.jar"})
 @Permissions(values = {"android.permission.INTERNET"})
 @Events(values = {"Complete", "Error (Message As String)", "Ready", "TrackChanged"})
 public class SimpleExoPlayerWrapper  {
@@ -157,6 +167,54 @@ public class SimpleExoPlayerWrapper  {
 				// TODO Auto-generated method stub
 				
 			}
+
+			@Override
+			public void onEvents(Player arg0, com.google.android.exoplayer2.Player.Events arg1) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onExperimentalOffloadSchedulingEnabledChanged(boolean offloadSchedulingEnabled) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onExperimentalSleepingForOffloadChanged(boolean arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onMediaItemTransition(MediaItem mediaItem, int reason) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onIsLoadingChanged(boolean isLoading) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onPlaybackStateChanged(int state) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onStaticMetadataChanged(java.util.List<Metadata> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
 			
 		});
 	}
@@ -164,7 +222,7 @@ public class SimpleExoPlayerWrapper  {
 	 * Initializes the player.
 	 */
 	public void Initialize(final BA ba, String EventName) {
-		TrackSelection.Factory videoTrackSelectionFactory =
+		AdaptiveTrackSelection.Factory videoTrackSelectionFactory =
 		    new AdaptiveTrackSelection.Factory();
 		trackSelector =
 		    new DefaultTrackSelector(videoTrackSelectionFactory);

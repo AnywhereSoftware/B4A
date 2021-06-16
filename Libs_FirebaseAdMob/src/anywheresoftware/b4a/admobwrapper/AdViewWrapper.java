@@ -1,6 +1,6 @@
 
 /*
- * Copyright 2010 - 2020 Anywhere Software (www.b4x.com)
+ * Copyright 2010 - 2021 Anywhere Software (www.b4x.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
-@Version(2.10f)
+@Version(2.13f)
 @ShortName("AdView")
 @Events(values={"ReceiveAd", "FailedToReceiveAd (ErrorCode As String)",
 		"AdScreenDismissed", "PresentScreen"})
@@ -181,6 +181,9 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 			this.AdUnitId = AdUnitId;
 			
 		}
+		public boolean IsInitialized() {
+			return this.AdUnitId != null;
+		}
 		/**
 		 * Requests an ad. The AdLoaded event will be raised.
 		 */
@@ -257,7 +260,7 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 			builder.setTestDeviceIds((java.util.List)TestDeviceIds.getObject());
 			return builder;
 		}
-		public void SetConfigutation (Object ConfigurationBuilder) {
+		public void SetConfiguration (Object ConfigurationBuilder) {
 			MobileAds.setRequestConfiguration(((RequestConfiguration.Builder)ConfigurationBuilder).build());
 		}
 	}

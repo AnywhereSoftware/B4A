@@ -22,12 +22,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,7 +33,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import android.app.Activity;
@@ -57,9 +52,7 @@ import anywheresoftware.b4a.BA.ShortName;
 @DependsOn(values={"com.google.firebase:firebase-auth", "com.google.android.gms:play-services-auth", "com.google.firebase:firebase-core"})
 @Events(values={"SignedIn (User As FirebaseUser)", "TokenAvailable (User As FirebaseUser, Success As Boolean, TokenId As String)", "SignError (Error As Exception)"})
 @Version(2.01f)
-public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFailedListener{
-	@Hide
-	public GoogleApiClient googleClient;
+public class FirebaseAuthWrapper  {
 	@Hide
 	public FirebaseAuth auth;
 	private IOnActivityResult ion;
@@ -82,6 +75,7 @@ public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFa
 					ba.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, eventName + "_signedin", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new FirebaseUserWrapper(), user)});
 			}
 		});
+		
 		GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
 		.requestIdToken(BA.applicationContext.getResources().getString(GetResourceId("string", "default_web_client_id")))
 		.requestEmail()
@@ -113,11 +107,7 @@ public class FirebaseAuthWrapper  implements ConnectionCallbacks, OnConnectionFa
 	public void onConnectionSuspended(int arg0) {
 		
 	}
-	@Hide
-	@Override
-	public void onConnectionFailed(ConnectionResult arg0) {
-		BA.Log("connection failed.");
-	}
+
 	/**
 	 * Sign outs from Firebase and Google.
 	 */

@@ -127,11 +127,21 @@ public class RingtoneManagerWrapper {
 	}
 	/**
 	 * Plays a ringtone Uri.
+	 *Returns an object that can be passed to Stop, to stop playback.
 	 */
-	public void Play(BA ba, String Uri) {
+	public Object Play(BA ba, String Uri) {
 		Ringtone r = RingtoneManager.getRingtone(ba.context, android.net.Uri.parse(Uri));
 		if (r != null)
 			r.play();
+		return r;
+	}
+	/**
+	 * Stops playback of a previously played ringtone.
+	 *Ringtone - the object returned from Play.
+	 */
+	public void Stop(Object Ringtone) {
+		if (Ringtone != null)
+			((Ringtone)Ringtone).stop();;
 	}
 	/**
 	 * Deletes the given entry.

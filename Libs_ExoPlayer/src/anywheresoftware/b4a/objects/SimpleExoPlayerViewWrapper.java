@@ -25,8 +25,7 @@ import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.keywords.Common.DesignerCustomView;
 import anywheresoftware.b4a.objects.collections.Map;
 
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.ui.PlayerView;
 
 /**
  * A player interface. Should be added as a custom view with the designer.
@@ -40,14 +39,12 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 		
 	})
 @ShortName("SimpleExoPlayerView")
-public class SimpleExoPlayerViewWrapper extends ViewWrapper<SimpleExoPlayerView> implements DesignerCustomView {
-	private BA ba;
-	private String eventName;
+public class SimpleExoPlayerViewWrapper extends ViewWrapper<PlayerView> implements DesignerCustomView {
 
 	@Hide
 	@Override
 	public void _initialize(final BA ba, Object activityClass, String EventName) {
-		final SimpleExoPlayerView view = new SimpleExoPlayerView(ba.context);
+		final PlayerView view = new PlayerView(ba.context);
 		final String eventName = EventName.toLowerCase(BA.cul);
 		setObject(view);
 		innerInitialize(ba, eventName, true);
