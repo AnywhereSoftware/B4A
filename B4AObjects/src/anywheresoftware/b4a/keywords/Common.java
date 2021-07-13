@@ -69,7 +69,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(10.70f)
+@Version(11.00f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -1678,6 +1678,12 @@ public class Common {
 	 */
 	public static void Sleep(int Milliseconds) {
 
+	}
+	/**
+	 * Inline If - returns TrueValue if Condition is True and False otherwise. Only the relevant expression is evaluated. 
+	 */
+	public static Object IIf (boolean Condition, Object TrueValue, Object FalseValue) {
+		return null;
 	}
 	@Hide
 	public static void Sleep(final BA ba, final ResumableSub rs, int Milliseconds) {

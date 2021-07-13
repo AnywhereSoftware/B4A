@@ -41,23 +41,27 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import android.app.Activity;
 import android.content.Intent;
+import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.IOnActivityResult;
 import anywheresoftware.b4a.BA.DependsOn;
+import anywheresoftware.b4a.BA.Events;
 import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.Permissions;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.keywords.Common.DesignerCustomView;
+import anywheresoftware.b4a.objects.B4AException;
 import anywheresoftware.b4a.objects.FirebaseAuthWrapper;
 import anywheresoftware.b4a.objects.LabelWrapper;
 import anywheresoftware.b4a.objects.PanelWrapper;
 import anywheresoftware.b4a.objects.collections.Map;
 
-@Version(1.02f)
+@Version(1.03f)
 @ShortName("FacebookSdk")
 @Permissions(values={"android.permission.INTERNET"})
 @DependsOn(values={"facebook-core-7.0.0.aar", "facebook-login-7.0.0.aar",  "facebook-common-7.0.0.aar", "com.android.support:cardview-v7"})
+@Events(values= {"SignError (Error As Exception)"})
 public class FacebookSdkWrapper {
 	@Hide
 	public FacebookSdk sdk;
@@ -68,13 +72,22 @@ public class FacebookSdkWrapper {
 	@Hide
 	LoginManager loginManager;
 	private String[] permissions = new String[] {"email", "public_profile"};
+	private BA ba;
+	private String eventName;
+	/**
+	 * Use Initialize2 instead.
+	 */
+	public void Initialize(BA ba) throws Exception {
+		Initialize2(ba, "");
+	}
 	
-	public void Initialize() throws Exception {
+	public void Initialize2(BA ba, String EventName) throws Exception {
 		if (FacebookSdk.isInitialized() == false) {
 			FacebookSdk.sdkInitialize(BA.applicationContext);
 			AppEventsLogger.activateApp(BA.applicationContext);
 		}
-
+		this.ba = ba;
+		this.eventName = EventName.toLowerCase(BA.cul);
 		loginManager = LoginManager.getInstance();
 		callback = CallbackManager.Factory.create();
 		this.auth = FirebaseAuth.getInstance();
@@ -83,11 +96,15 @@ public class FacebookSdkWrapper {
 			@Override
 			public void onCancel() {
 				BA.Log("Facebook cancel");
+				FacebookSdkWrapper.this.ba.raiseEventFromDifferentThread(FacebookSdkWrapper.this, null, 0, 
+						eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), new Exception("cancel"))});
 			}
 
 			@Override
 			public void onError(FacebookException arg0) {
 				BA.Log("Facebook error: " + arg0);
+				FacebookSdkWrapper.this.ba.raiseEventFromDifferentThread(FacebookSdkWrapper.this, null, 0, 
+						eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), arg0)});
 			}
 
 			@Override
@@ -114,6 +131,7 @@ public class FacebookSdkWrapper {
 	}
 	/**
 	 * Starts the sign in process. This method should be called from an Activity.
+	 *The SignError event will be raised in the module where FacebookSDK was initialized.
 	 */
 	public void SignIn(BA ba) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 		BA.LogInfo("Facebook - SignIn");
@@ -142,8 +160,11 @@ public class FacebookSdkWrapper {
 			@Override
 			public void onComplete(Task<AuthResult> arg0) {
 				BA.Log("signInWithCredential complete: " + arg0.isSuccessful());
-				if (arg0.isSuccessful() == false)
+				if (arg0.isSuccessful() == false) { 
 					BA.Log("error: " + arg0.getException());
+					ba.raiseEventFromDifferentThread(FacebookSdkWrapper.this, null, 0, 
+							eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), arg0.getException())});
+				}
 				
 			}
 			
