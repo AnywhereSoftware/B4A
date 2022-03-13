@@ -204,9 +204,12 @@ public class NotificationWrapper extends AbsObjectWrapper<Object>{
 		i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		if (Tag != null)
 			i.putExtra("Notification_Tag", Tag);
+		int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (Build.VERSION.SDK_INT >= 31)
+			flags |= 67108864; //FLAG_IMMUTABLE
 		PendingIntent pi = PendingIntent.getActivity(ba.context, Tag == null ? 0 : pendingId++
 				, i,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				flags);
 
 		NotificationData nd = getND();
 		Notification n;

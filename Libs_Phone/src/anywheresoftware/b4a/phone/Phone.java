@@ -61,7 +61,7 @@ import anywheresoftware.b4a.objects.ActivityWrapper;
 import anywheresoftware.b4a.objects.collections.List;
 
 @ShortName("Phone")
-@Version(2.51f)
+@Version(2.52f)
 public class Phone {
 	
 	/**

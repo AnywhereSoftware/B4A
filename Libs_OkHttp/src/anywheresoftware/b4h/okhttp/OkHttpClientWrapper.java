@@ -76,10 +76,10 @@ import anywheresoftware.b4a.objects.streams.File;
  */
 @Events(values={"ResponseSuccess (Response As OkHttpResponse, TaskId As Int)",
 "ResponseError (Response As OkHttpResponse, Reason As String, StatusCode As Int, TaskId As Int)"})
-@DependsOn(values={"okhttp-3.12.12", "okio-1.17.5"})
+@DependsOn(values={"okhttp-4.9.0", "okio-2.8.0", "okhttp-urlconnection-4.9.3", "kotlin-stdlib-1.6.10"})
 @ShortName("OkHttpClient")
 @Permissions(values = {"android.permission.INTERNET"})
-@Version(1.31f)
+@Version(1.50f)
 public class OkHttpClientWrapper {
 	@Hide
 	public OkHttpClient client;
@@ -123,6 +123,7 @@ public class OkHttpClientWrapper {
 
 		builder.sslSocketFactory(sslSocketFactory, trustManager);
 		client = builder.build();
+		
 
 	}
 	@Hide
@@ -288,7 +289,7 @@ public class OkHttpClientWrapper {
 		private String handleDigest(Response response, String raw) throws IOException {
 			Request request = response.request();
 			String methodName = request.method();
-			String uri = RequestLine.requestPath(request.url());
+			String uri = RequestLine.INSTANCE.requestPath(request.url());
 			if (ptDigest == null)
 				ptDigest = Pattern.compile("(\\w+)=\\\"([^\"]+)\\\"");
 			Matcher m = ptDigest.matcher(raw);

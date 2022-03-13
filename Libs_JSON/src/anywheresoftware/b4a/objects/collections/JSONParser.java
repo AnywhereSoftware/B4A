@@ -48,7 +48,7 @@ import anywheresoftware.b4a.objects.collections.Map.MyMap;
  *JSON.Initialize(File.ReadString(File.DirAssets, "example.json")) 'Read the text from a file.
  *Map1 = JSON.NextObject</code>
  */
-@Version(1.10f)
+@Version(1.21f)
 @ShortName("JSONParser")
 public class JSONParser extends AbsObjectWrapper<JSONTokener>{
 	/**
@@ -248,7 +248,61 @@ public class JSONParser extends AbsObjectWrapper<JSONTokener>{
 			}
 			return l;
 		}
+		
 	}
-	                                   
+	/**
+	 * Works with the As method to convert strings to objects and vice versa.
+	 *Example:<code>
+	 *Dim m As Map = CreateMap("Key1": "Value1")
+	 *Dim s As String = m.As(JSON).ToString</code>
+	 */
+	@ShortName("JSON")
+	public static class JSONConverter extends AbsObjectWrapper<Object> {
+		/**
+		 * Converts a Map or List to a JSON string. Same as JsonGenerator.ToPrettyString(4).
+		 */
+		public String ToString() throws Exception {
+			return ToStringImpl(true);
+		}
+		/**
+		 * Converts a Map or List to a JSON string, without whitespace. Same as JsonGenerator.ToString.
+		 */
+		public String ToCompactString()throws Exception {
+			return ToStringImpl(false);
+		}
+		private String ToStringImpl(boolean pretty) throws Exception{
+			JSONGenerator g = new JSONGenerator();
+			Object o = getObject();
+			if (o instanceof MyMap)
+				g.Initialize((Map) AbsObjectWrapper.ConvertToWrapper(new Map(), (MyMap)o));
+			else if (o instanceof java.util.List)
+				g.Initialize2((List) AbsObjectWrapper.ConvertToWrapper(new List(), o));
+			else
+				throw new RuntimeException("Only Maps and Lists are supported");
+			return pretty ? g.ToPrettyString(4) : g.ToString();
+		}
+		
+		/**
+		 * Converts the string to a Map.
+		 */
+		public Map ToMap() throws JSONException {
+			return stringToObject().NextObject();
+		}
+		/**
+		 * Converts the string to a List.
+		 */
+		public List ToList() throws JSONException {
+			return stringToObject().NextArray();
+		}
+		private JSONParser stringToObject() {
+			Object o = getObject();
+			if (o instanceof String == false) {
+				throw new RuntimeException("String expected");
+			}
+			JSONParser p = new JSONParser();
+			p.Initialize((String)o);
+			return p;
+		}
+	}
 			
 }

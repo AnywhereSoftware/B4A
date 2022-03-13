@@ -30,7 +30,6 @@ import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.objects.RuntimePermissions.RequestHandler;
 
-//don't forget to jetify!
 @ShortName("RuntimePermissions")
 @Version(1.12f)
 @DependsOn(values={"com.android.support:support-v4"})

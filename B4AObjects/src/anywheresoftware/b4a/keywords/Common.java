@@ -69,7 +69,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(11.00f)
+@Version(11.50f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -946,8 +946,11 @@ public class Common {
 	}
 	private static PendingIntent createPendingIntentForAlarmManager(BA mine, Object Service) throws ClassNotFoundException {
 		Intent in = new Intent(BA.applicationContext, getComponentClass(mine, Service, true));
+		int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (Build.VERSION.SDK_INT >= 31)
+			flags |= 33554432; //FLAG_MUTABLE
 		return PendingIntent.getBroadcast(mine.context, 1, in,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				flags);
 	}
 	/**
 	 * Cancels previously scheduled tasks for this service.

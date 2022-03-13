@@ -1,21 +1,4 @@
-
-/*
- * Copyright 2010 - 2020 Anywhere Software (www.b4x.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
- 
- package anywheresoftware.b4a.objects;
+package anywheresoftware.b4a.objects;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -36,11 +20,13 @@ import android.hardware.usb.UsbManager;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import anywheresoftware.b4a.BA;
+import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
 
 import com.hoho.android.usbserial.driver.UsbId;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 
 /**
@@ -85,7 +71,7 @@ import com.hoho.android.usbserial.driver.UsbSerialProber;
  *If it is an Arduino ADK then pressing its Reset button will also work and will maintain the Accessory permission.
  */
 @ShortName("UsbSerial")
-@Version(2.3f)
+@Version(2.4f)
 public class UsbSerial {
 	// 2.0 	initial release
 	//	
@@ -120,8 +106,29 @@ public class UsbSerial {
 	//
 	//		Changes to usb-serial-for-android code marked by *ADDED, *REMOVED and *MOVED
 	//		Swapped endpoints if necessary in CdcAcmSerialDriver.Open
+	//
+	// 2.4	Changes to 2.3 UsbSerial code and driver
+	//		added Use of multiple serial USB devices not just the first one
+	//		moved a ":" in DeviceInfo
+	// 		sb.append("VendorId  :").append(toHex(....
+	//		to                  
+	//		sb.append("VendorId : ").append(toHex(....
+	//
+	// 		*	// 2014-07-09 JeanLC-Mod 0.1	->
+    // 		* Mod Files: 
+    // 		* 1.- com/hoho/android/usbserial/driver/UsbSerialProber.java
+    // 		* 2.- anywheresoftware/b4a/objects/UsbSerial.java
+	//		Use:
+	//		Dim usb1 As UsbSerial
+	//		Dim usbN As UsbSerial
+	//		For Device 1: usb1.UsbPresent(1) ,HasPermission(1) , DeviceInfo(1), Open(9600, 1) , RequestPermission(1)	
+	//		For Device n: usbN.UsbPresent(n), HasPermission(n), DeviceInfo(n), Open(9600, n), RequestPermission(n)
+	//		You have to analyze the incoming data or check DeviceInfo(n) to know what is connected to the USB. The order could change. 
+	//		Changes to usb-serial-for-android code marked by *ADDED, *REMOVED, *MOVED and *MODDED Ver_2.4
+	// 		*	// 2014-07-09 JeanLC-Mod 0.1	<-
+	//
 
-	private static final double version = 2.3;
+	private static final double version = 2.4;
 
 	/**
 	 *Returns the version of the library.
@@ -153,7 +160,10 @@ public class UsbSerial {
     UsbAccessory accessory;
     private ParcelFileDescriptor pfd;
     
-	private volatile UsbSerialDriver driver;
+	@Hide
+	public volatile UsbSerialDriver driver;
+	@Hide
+	public volatile UsbSerialPort port;
 	private int TIMEOUT = 200;
 		
 	/**
@@ -161,14 +171,19 @@ public class UsbSerial {
 	 *Returns USB_DEVICE if a device was opened successfully.
 	 *Returns USB_ACCESSORY if an accessory was opened successfully.
 	 *Returns USB_NONE if neither a device nor an accessory was found.
-	 *The BaudRate parameter is ignored if the connected device is an Accessory
+	 *The BaudRate parameter is ignored if the connected device is an Accessory	
+	 *
+	 *ADDED: Ver_2.4 DevNum = 1 to n
+	 *MODDED: Ver_2.4 Code changed to support DevNum
 	 */
-	public int Open(BA ba, int BaudRate) throws IOException {
+	public int Open(BA ba, int BaudRate, int DevNum) throws IOException {
 		UsbManager manager = (UsbManager) BA.applicationContext.getSystemService(Context.USB_SERVICE);
-		driver = UsbSerialProber.acquire(manager);
+		List<UsbSerialDriver> drivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
+		driver = drivers.size() > 0 ? drivers.get(Math.max(drivers.size(), DevNum) - 1) : null;
 		if (driver != null) {
-			driver.open();
-			driver.setBaudRate(BaudRate);
+			port = driver.getPorts().get(0);
+			port.open();
+			port.setBaudRate(BaudRate);
 			driverOpen = true;
 			return USB_DEVICE;
 		}
@@ -270,16 +285,22 @@ public class UsbSerial {
 	 *Tests whether your application has permission to access this device or Accessory.
 	 *Call RequestPermission to receive such permission.
 	 *Returns True if the user already has permission.
+	 *
+	 *ADDED: Ver_2.4 DevNum = 1 to n, DevCount (Count devices)
+	 *MODDED: Ver_2.4 Code changed to support DevNum and DevCount
 	 */
-	public boolean HasPermission()
+	public boolean HasPermission(int DevNum)
 	{
+		int DevCount = 1;			
 		UsbManager manager = (UsbManager) BA.applicationContext.getSystemService(Context.USB_SERVICE);
 		HashMap<String, UsbDevice> h = manager.getDeviceList();
 		if (h.size() > 0)
 		{
 			for (UsbDevice u : h.values())
 			{
-				return manager.hasPermission(u);
+				if(DevCount++ == DevNum){				
+					return manager.hasPermission(u);
+				}				
 			}
 		}
 		UsbAccessory[] a = manager.getAccessoryList();
@@ -293,18 +314,23 @@ public class UsbSerial {
 	/**
 	 *Shows a dialog that asks the user to allow your application to access the USB device or Accessory.
 	 *Note that this dialog is non-modal so your code that invokes it will carry on running and not wait for the dialog to close.
+	 *ADDED: Ver_2.4 DevNum = 1 to n
+	 *MODDED: Ver_2.4 Code changed to support DevNum
 	 */
-	public void RequestPermission()
+	public void RequestPermission(int DevNum)
 	{
+		int DevCount = 1;			
 		UsbManager manager = (UsbManager) BA.applicationContext.getSystemService(Context.USB_SERVICE);
 		HashMap<String, UsbDevice> h = manager.getDeviceList();
 		if (h.size() > 0)
 		{
 			for (UsbDevice u : h.values())
 			{
-				manager.requestPermission(u, PendingIntent.getBroadcast(BA.applicationContext, 0, new Intent(
-						"com.android.example.USB_PERMISSION"), 0));
-				return;
+				if(DevCount++ == DevNum){		
+					manager.requestPermission(u, PendingIntent.getBroadcast(BA.applicationContext, 0, new Intent(
+							"com.android.example.USB_PERMISSION"), 0));
+					return;
+				}
 			}
 		}
 		UsbAccessory[] a = manager.getAccessoryList();
@@ -328,23 +354,23 @@ public class UsbSerial {
 	public void SetParameters(int baudRate, int dataBits, int stopBits, int parity) throws Exception
 	{
 		if (driverOpen)
-			driver.setParameters(baudRate, dataBits, stopBits, parity);
+			driver.getPorts().get(0).setParameters(baudRate, dataBits, stopBits, parity);
 	}
 	
-	public final int STOPBITS_1 = UsbSerialDriver.STOPBITS_1;
-	public final int STOPBITS_1_5 = UsbSerialDriver.STOPBITS_1_5;
-	public final int STOPBITS_2 = UsbSerialDriver.STOPBITS_2;
+	public final int STOPBITS_1 = UsbSerialPort.STOPBITS_1;
+	public final int STOPBITS_1_5 = UsbSerialPort.STOPBITS_1_5;
+	public final int STOPBITS_2 = UsbSerialPort.STOPBITS_2;
 	
-	public final int DATABITS_5 = UsbSerialDriver.DATABITS_5;
-	public final int DATABITS_6 = UsbSerialDriver.DATABITS_6;
-	public final int DATABITS_7 = UsbSerialDriver.DATABITS_7;
-	public final int DATABITS_8 = UsbSerialDriver.DATABITS_8;
+	public final int DATABITS_5 = UsbSerialPort.DATABITS_5;
+	public final int DATABITS_6 = UsbSerialPort.DATABITS_6;
+	public final int DATABITS_7 = UsbSerialPort.DATABITS_7;
+	public final int DATABITS_8 = UsbSerialPort.DATABITS_8;
 	
-	public final int PARITY_EVEN = UsbSerialDriver.PARITY_EVEN;
-	public final int PARITY_MARK = UsbSerialDriver.PARITY_MARK;
-	public final int PARITY_NONE = UsbSerialDriver.PARITY_NONE;
-	public final int PARITY_ODD = UsbSerialDriver.PARITY_ODD;
-	public final int PARITY_SPACE = UsbSerialDriver.PARITY_SPACE;
+	public final int PARITY_EVEN = UsbSerialPort.PARITY_EVEN;
+	public final int PARITY_MARK = UsbSerialPort.PARITY_MARK;
+	public final int PARITY_NONE = UsbSerialPort.PARITY_NONE;
+	public final int PARITY_ODD = UsbSerialPort.PARITY_ODD;
+	public final int PARITY_SPACE = UsbSerialPort.PARITY_SPACE;
 	
 	public final int USB_NONE = 0;
 	public final int USB_DEVICE = 1;
@@ -356,14 +382,19 @@ public class UsbSerial {
 	 *Returns USB_DEVICE if a supported slave device is present
 	 *Returns USB_ACCESSORY if an Accessory that supports is present
 	 *Returns USB_NONE if neither a recognised device nor an accessory was found.
+	 *
+	 *ADDED: Ver_2.4 DevNum = 1 to n
+	 *MODDED: Ver_2.4 Code changed to support DevNum
 	 */
-	public int UsbPresent()
-	{
+	public int UsbPresent(int DevNum)
+	{		
 		UsbManager manager = (UsbManager) BA.applicationContext.getSystemService(Context.USB_SERVICE);
 		HashMap<String, UsbDevice> h = manager.getDeviceList();
 		if (h.size() > 0)
-		{
-			return USB_DEVICE;
+		{	
+			if(h.size() >= DevNum){		
+				return USB_DEVICE;
+			}			
 		}
 		UsbAccessory[] a = manager.getAccessoryList();
 		if (a != null)
@@ -377,9 +408,13 @@ public class UsbSerial {
 	/**
 	 *Returns a multi-line string containing the details for the connected device.
 	 *You need to have obtained permission before calling this method. 
+	 *
+	 *ADDED: Ver_2.4 DevNum = 1 to n
+	 *MODDED: Ver_2.4 Code changed to support DevNum
 	 */
-	public String DeviceInfo() throws Exception
+	public String DeviceInfo(int DevNum) throws Exception
 	{
+		int DevCount = 1;	
 		StringBuilder sb = new StringBuilder();
 		byte[] rawdescs;
 		UsbManager manager = (UsbManager) BA.applicationContext.getSystemService(Context.USB_SERVICE);
@@ -391,8 +426,10 @@ public class UsbSerial {
 		UsbInterface iface;
 		for (UsbDevice u : h.values())
 		{
-			usb = u;
-			break;
+			if(DevCount++ == DevNum){		
+				usb = u;
+				break;
+			}
 		}
 		iface = usb.getInterface(0);
 		conn = manager.openDevice(usb);		
@@ -420,7 +457,7 @@ public class UsbSerial {
 		sb.append("DeviceSubClass : ").append(usb.getDeviceSubclass()).append('\n');
 		sb.append("Device ID : ").append(toHex(usb.getDeviceId())).append('\n');
 		sb.append("ProductId : ").append(toHex(usb.getProductId())).append('\n');
-		sb.append("VendorId  :").append(toHex(usb.getVendorId())).append('\n');
+		sb.append("VendorId : ").append(toHex(usb.getVendorId())).append('\n');
 		sb.append('\n');
 		for (int i = 0; i < usb.getInterfaceCount(); i++)
 		{
@@ -459,10 +496,10 @@ public class UsbSerial {
 	{ TIMEOUT = mSecs; }
 	
 	
-	public final int DRIVER_PROLIFIC = UsbId.DRIVER_PROLIFIC;
-	public final int DRIVER_SILABS = UsbId.DRIVER_SILABS;
-	public final int DRIVER_CDCACM = UsbId.DRIVER_CDCACM;
-	public final int DRIVER_FTDI = UsbId.DRIVER_CUSTOM;
+	public final int DRIVER_PROLIFIC = UsbId.PROLIFIC_PL2303;
+	public final int DRIVER_SILABS = UsbId.SILABS_CP2102;
+	public final int DRIVER_CDCACM = UsbId.ST_CDC;
+	public final int DRIVER_FTDI = UsbId.FTDI_FT2232H;
 	
 	/**
 	 *If a device might be supported by an existing driver in this library but is not recognised

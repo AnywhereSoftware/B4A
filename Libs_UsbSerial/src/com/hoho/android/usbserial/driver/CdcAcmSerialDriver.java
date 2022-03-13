@@ -1,21 +1,10 @@
-
-/*
- * Copyright 2010 - 2020 Anywhere Software (www.b4x.com)
+/* Copyright 2011-2013 Google Inc.
+ * Copyright 2013 mike wakerly <opensource@hoho.com>
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Project home page: https://github.com/mik3y/usb-serial-for-android
  */
- 
- package com.hoho.android.usbserial.driver;
+
+package com.hoho.android.usbserial.driver;
 
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
@@ -25,7 +14,10 @@ import android.hardware.usb.UsbInterface;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,234 +28,267 @@ import java.util.Map;
  *      href="http://www.usb.org/developers/devclass_docs/usbcdc11.pdf">Universal
  *      Serial Bus Class Definitions for Communication Devices, v1.1</a>
  */
-public class CdcAcmSerialDriver extends CommonUsbSerialDriver {
+public class CdcAcmSerialDriver implements UsbSerialDriver {
 
     private final String TAG = CdcAcmSerialDriver.class.getSimpleName();
 
-    private UsbInterface mControlInterface;
-    private UsbInterface mDataInterface;
+    private final UsbDevice mDevice;
+    private final List<UsbSerialPort> mPorts;
 
-    private UsbEndpoint mControlEndpoint;
-    private UsbEndpoint mReadEndpoint;
-    private UsbEndpoint mWriteEndpoint;
+    public CdcAcmSerialDriver(UsbDevice device) {
+        mDevice = device;
+        mPorts = new ArrayList<>();
 
-    private int mBaudRate;
-    private int mDataBits;
-    private int mStopBits;
-    private int mParity;
-
-    private boolean mRts = false;
-    private boolean mDtr = false;
-
-    private static final int USB_RECIP_INTERFACE = 0x01;
-    private static final int USB_RT_ACM = UsbConstants.USB_TYPE_CLASS | USB_RECIP_INTERFACE;
-
-    private static final int SET_LINE_CODING = 0x20;  // USB CDC 1.1 section 6.2
-    private static final int GET_LINE_CODING = 0x21;
-    private static final int SET_CONTROL_LINE_STATE = 0x22;
-    private static final int SEND_BREAK = 0x23;
-
-    public CdcAcmSerialDriver(UsbDevice device, UsbDeviceConnection connection) {
-        super(device, connection);
+        int controlInterfaceCount = 0;
+        int dataInterfaceCount = 0;
+        for( int i = 0; i < device.getInterfaceCount(); i++) {
+            if(device.getInterface(i).getInterfaceClass() == UsbConstants.USB_CLASS_COMM)
+                controlInterfaceCount++;
+            if(device.getInterface(i).getInterfaceClass() == UsbConstants.USB_CLASS_CDC_DATA)
+                dataInterfaceCount++;
+        }
+        for( int port = 0; port < Math.min(controlInterfaceCount, dataInterfaceCount); port++) {
+            mPorts.add(new CdcAcmSerialPort(mDevice, port));
+        }
+        if(mPorts.size() == 0) {
+            mPorts.add(new CdcAcmSerialPort(mDevice, -1));
+        }
     }
 
     @Override
-    public void open() throws IOException {
-        Log.d(TAG, "claiming interfaces, count=" + mDevice.getInterfaceCount());
-
-        Log.d(TAG, "Claiming control interface.");
-        mControlInterface = mDevice.getInterface(0);
-        Log.d(TAG, "Control iface=" + mControlInterface);
-        // class should be USB_CLASS_COMM
-
-        if (!mConnection.claimInterface(mControlInterface, true)) {
-            throw new IOException("Could not claim control interface.");
-        }
-        mControlEndpoint = mControlInterface.getEndpoint(0);
-        Log.d(TAG, "Control endpoint direction: " + mControlEndpoint.getDirection());
-
-        Log.d(TAG, "Claiming data interface.");
-        mDataInterface = mDevice.getInterface(1);
-        Log.d(TAG, "data iface=" + mDataInterface);
-        // class should be USB_CLASS_CDC_DATA
-
-        if (!mConnection.claimInterface(mDataInterface, true)) {
-            throw new IOException("Could not claim data interface.");
-        }
-        mReadEndpoint = mDataInterface.getEndpoint(1);
-        Log.d(TAG, "Read endpoint direction: " + mReadEndpoint.getDirection());
-        mWriteEndpoint = mDataInterface.getEndpoint(0);
-        Log.d(TAG, "Write endpoint direction: " + mWriteEndpoint.getDirection());
-
-        if (mReadEndpoint.getDirection() == 0) // *ADDED for Roboclaw and maybe others
-        {
-        	UsbEndpoint temp = mReadEndpoint;
-        	mReadEndpoint = mWriteEndpoint;
-        	mWriteEndpoint = temp;
-        	Log.d(TAG, "Swapped endpoints");
-        }
-        
-        Log.d(TAG, "Setting line coding to 115200/8N1");
-        mBaudRate = 115200;
-        mDataBits = DATABITS_8;
-        mParity = PARITY_NONE;
-        mStopBits = STOPBITS_1;
-        setParameters(mBaudRate, mDataBits, mStopBits, mParity);
-    }
-
-    private int sendAcmControlMessage(int request, int value, byte[] buf) {
-        return mConnection.controlTransfer(
-                USB_RT_ACM, request, value, 0, buf, buf != null ? buf.length : 0, 5000);
+    public UsbDevice getDevice() {
+        return mDevice;
     }
 
     @Override
-    public void close() throws IOException {
-        mConnection.close();
+    public List<UsbSerialPort> getPorts() {
+        return mPorts;
     }
 
-    @Override
-    public int read(byte[] dest, int timeoutMillis) throws IOException {
-        final int numBytesRead;
-        synchronized (mReadBufferLock) {
-            int readAmt = Math.min(dest.length, mReadBuffer.length);
-            numBytesRead = mConnection.bulkTransfer(mReadEndpoint, mReadBuffer, readAmt,
-                    timeoutMillis);
-            if (numBytesRead < 0) {
-                // This sucks: we get -1 on timeout, not 0 as preferred.
-                // We *should* use UsbRequest, except it has a bug/api oversight
-                // where there is no way to determine the number of bytes read
-                // in response :\ -- http://b.android.com/28023
-                return 0;
+    public class CdcAcmSerialPort extends CommonUsbSerialPort {
+
+        private UsbInterface mControlInterface;
+        private UsbInterface mDataInterface;
+
+        private UsbEndpoint mControlEndpoint;
+
+        private int mControlIndex;
+
+        private boolean mRts = false;
+        private boolean mDtr = false;
+
+        private static final int USB_RECIP_INTERFACE = 0x01;
+        private static final int USB_RT_ACM = UsbConstants.USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+
+        private static final int SET_LINE_CODING = 0x20;  // USB CDC 1.1 section 6.2
+        private static final int GET_LINE_CODING = 0x21;
+        private static final int SET_CONTROL_LINE_STATE = 0x22;
+        private static final int SEND_BREAK = 0x23;
+
+        public CdcAcmSerialPort(UsbDevice device, int portNumber) {
+            super(device, portNumber);
+        }
+
+        @Override
+        public UsbSerialDriver getDriver() {
+            return CdcAcmSerialDriver.this;
+        }
+
+        @Override
+        protected void openInt(UsbDeviceConnection connection) throws IOException {
+            if (mPortNumber == -1) {
+                Log.d(TAG,"device might be castrated ACM device, trying single interface logic");
+                openSingleInterface();
+            } else {
+                Log.d(TAG,"trying default interface logic");
+                openInterface();
             }
-            System.arraycopy(mReadBuffer, 0, dest, 0, numBytesRead);
         }
-        return numBytesRead;
-    }
 
-    @Override
-    public int write(byte[] src, int timeoutMillis) throws IOException {
-        // TODO(mikey): Nearly identical to FtdiSerial write. Refactor.
-        int offset = 0;
+        private void openSingleInterface() throws IOException {
+            // the following code is inspired by the cdc-acm driver in the linux kernel
 
-        while (offset < src.length) {
-            final int writeLength;
-            final int amtWritten;
+            mControlIndex = 0;
+            mControlInterface = mDevice.getInterface(0);
+            mDataInterface = mDevice.getInterface(0);
+            if (!mConnection.claimInterface(mControlInterface, true)) {
+                throw new IOException("Could not claim shared control/data interface");
+            }
 
-            synchronized (mWriteBufferLock) {
-                final byte[] writeBuffer;
-
-                writeLength = Math.min(src.length - offset, mWriteBuffer.length);
-                if (offset == 0) {
-                    writeBuffer = src;
-                } else {
-                    // bulkTransfer does not support offsets, make a copy.
-                    System.arraycopy(src, offset, mWriteBuffer, 0, writeLength);
-                    writeBuffer = mWriteBuffer;
+            for (int i = 0; i < mControlInterface.getEndpointCount(); ++i) {
+                UsbEndpoint ep = mControlInterface.getEndpoint(i);
+                if ((ep.getDirection() == UsbConstants.USB_DIR_IN) && (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_INT)) {
+                    mControlEndpoint = ep;
+                } else if ((ep.getDirection() == UsbConstants.USB_DIR_IN) && (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK)) {
+                    mReadEndpoint = ep;
+                } else if ((ep.getDirection() == UsbConstants.USB_DIR_OUT) && (ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK)) {
+                    mWriteEndpoint = ep;
                 }
-
-                amtWritten = mConnection.bulkTransfer(mWriteEndpoint, writeBuffer, writeLength,
-                        timeoutMillis);
             }
-            if (amtWritten <= 0) {
-                throw new IOException("Error writing " + writeLength
-                        + " bytes at offset " + offset + " length=" + src.length);
+            if (mControlEndpoint == null) {
+                throw new IOException("No control endpoint");
+            }
+        }
+
+        private void openInterface() throws IOException {
+            Log.d(TAG, "claiming interfaces, count=" + mDevice.getInterfaceCount());
+
+            int controlInterfaceCount = 0;
+            int dataInterfaceCount = 0;
+            mControlInterface = null;
+            mDataInterface = null;
+            for (int i = 0; i < mDevice.getInterfaceCount(); i++) {
+                UsbInterface usbInterface = mDevice.getInterface(i);
+                if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_COMM) {
+                    if(controlInterfaceCount == mPortNumber) {
+                        mControlIndex = i;
+                        mControlInterface = usbInterface;
+                    }
+                    controlInterfaceCount++;
+                }
+                if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_CDC_DATA) {
+                    if(dataInterfaceCount == mPortNumber) {
+                        mDataInterface = usbInterface;
+                    }
+                    dataInterfaceCount++;
+                }
             }
 
-            Log.d(TAG, "Wrote amt=" + amtWritten + " attempted=" + writeLength);
-            offset += amtWritten;
-        }
-        return offset;
-    }
+            if(mControlInterface == null) {
+                throw new IOException("No control interface");
+            }
+            Log.d(TAG, "Control iface=" + mControlInterface);
 
-    @Deprecated
-    @Override
-    public int setBaudRate(int baudRate) throws IOException {
-        mBaudRate = baudRate;
-        setParameters(mBaudRate, mDataBits, mStopBits, mParity);
-        return mBaudRate;
-    }
+            if (!mConnection.claimInterface(mControlInterface, true)) {
+                throw new IOException("Could not claim control interface");
+            }
 
-    @Override
-    public void setParameters(int baudRate, int dataBits, int stopBits, int parity) {
-        byte stopBitsByte;
-        switch (stopBits) {
-            case STOPBITS_1: stopBitsByte = 1; break;
-            case STOPBITS_1_5: stopBitsByte = 2; break;
-            case STOPBITS_2: stopBitsByte = 3; break;
-            default: throw new IllegalArgumentException("Bad value for stopBits: " + stopBits);
-        }
+            mControlEndpoint = mControlInterface.getEndpoint(0);
+            if (mControlEndpoint.getDirection() != UsbConstants.USB_DIR_IN || mControlEndpoint.getType() != UsbConstants.USB_ENDPOINT_XFER_INT) {
+                throw new IOException("Invalid control endpoint");
+            }
 
-        byte parityBitesByte;
-        switch (parity) {
-            case PARITY_NONE: parityBitesByte = 0; break;
-            case PARITY_ODD: parityBitesByte = 1; break;
-            case PARITY_EVEN: parityBitesByte = 2; break;
-            case PARITY_MARK: parityBitesByte = 3; break;
-            case PARITY_SPACE: parityBitesByte = 4; break;
-            default: throw new IllegalArgumentException("Bad value for parity: " + parity);
+            if(mDataInterface == null) {
+                throw new IOException("No data interface");
+            }
+            Log.d(TAG, "data iface=" + mDataInterface);
+
+            if (!mConnection.claimInterface(mDataInterface, true)) {
+                throw new IOException("Could not claim data interface");
+            }
+
+            for (int i = 0; i < mDataInterface.getEndpointCount(); i++) {
+                UsbEndpoint ep = mDataInterface.getEndpoint(i);
+                if (ep.getDirection() == UsbConstants.USB_DIR_IN && ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK)
+                    mReadEndpoint = ep;
+                if (ep.getDirection() == UsbConstants.USB_DIR_OUT && ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK)
+                    mWriteEndpoint = ep;
+            }
         }
 
-        byte[] msg = {
-                (byte) ( baudRate & 0xff),
-                (byte) ((baudRate >> 8 ) & 0xff),
-                (byte) ((baudRate >> 16) & 0xff),
-                (byte) ((baudRate >> 24) & 0xff),
-                stopBitsByte,
-                parityBitesByte,
-                (byte) dataBits};
-        sendAcmControlMessage(SET_LINE_CODING, 0, msg);
-    }
+        private int sendAcmControlMessage(int request, int value, byte[] buf) throws IOException {
+            int len = mConnection.controlTransfer(
+                    USB_RT_ACM, request, value, mControlIndex, buf, buf != null ? buf.length : 0, 5000);
+            if(len < 0) {
+                throw new IOException("controlTransfer failed");
+            }
+            return len;
+        }
 
-    @Override
-    public boolean getCD() throws IOException {
-        return false;  // TODO
-    }
+        @Override
+        protected void closeInt() {
+            try {
+                mConnection.releaseInterface(mControlInterface);
+                mConnection.releaseInterface(mDataInterface);
+            } catch(Exception ignored) {}
+        }
 
-    @Override
-    public boolean getCTS() throws IOException {
-        return false;  // TODO
-    }
+        @Override
+        public void setParameters(int baudRate, int dataBits, int stopBits, @Parity int parity) throws IOException {
+            if(baudRate <= 0) {
+                throw new IllegalArgumentException("Invalid baud rate: " + baudRate);
+            }
+            if(dataBits < DATABITS_5 || dataBits > DATABITS_8) {
+                throw new IllegalArgumentException("Invalid data bits: " + dataBits);
+            }
+            byte stopBitsByte;
+            switch (stopBits) {
+                case STOPBITS_1: stopBitsByte = 0; break;
+                case STOPBITS_1_5: stopBitsByte = 1; break;
+                case STOPBITS_2: stopBitsByte = 2; break;
+                default: throw new IllegalArgumentException("Invalid stop bits: " + stopBits);
+            }
 
-    @Override
-    public boolean getDSR() throws IOException {
-        return false;  // TODO
-    }
+            byte parityBitesByte;
+            switch (parity) {
+                case PARITY_NONE: parityBitesByte = 0; break;
+                case PARITY_ODD: parityBitesByte = 1; break;
+                case PARITY_EVEN: parityBitesByte = 2; break;
+                case PARITY_MARK: parityBitesByte = 3; break;
+                case PARITY_SPACE: parityBitesByte = 4; break;
+                default: throw new IllegalArgumentException("Invalid parity: " + parity);
+            }
+            byte[] msg = {
+                    (byte) ( baudRate & 0xff),
+                    (byte) ((baudRate >> 8 ) & 0xff),
+                    (byte) ((baudRate >> 16) & 0xff),
+                    (byte) ((baudRate >> 24) & 0xff),
+                    stopBitsByte,
+                    parityBitesByte,
+                    (byte) dataBits};
+            sendAcmControlMessage(SET_LINE_CODING, 0, msg);
+        }
 
-    @Override
-    public boolean getDTR() throws IOException {
-        return mDtr;
-    }
+        @Override
+        public boolean getDTR() throws IOException {
+            return mDtr;
+        }
 
-    @Override
-    public void setDTR(boolean value) throws IOException {
-        mDtr = value;
-        setDtrRts();
-    }
+        @Override
+        public void setDTR(boolean value) throws IOException {
+            mDtr = value;
+            setDtrRts();
+        }
 
-    @Override
-    public boolean getRI() throws IOException {
-        return false;  // TODO
-    }
+        @Override
+        public boolean getRTS() throws IOException {
+            return mRts;
+        }
 
-    @Override
-    public boolean getRTS() throws IOException {
-        return mRts;
-    }
+        @Override
+        public void setRTS(boolean value) throws IOException {
+            mRts = value;
+            setDtrRts();
+        }
 
-    @Override
-    public void setRTS(boolean value) throws IOException {
-        mRts = value;
-        setDtrRts();
-    }
+        private void setDtrRts() throws IOException {
+            int value = (mRts ? 0x2 : 0) | (mDtr ? 0x1 : 0);
+            sendAcmControlMessage(SET_CONTROL_LINE_STATE, value, null);
+        }
 
-    private void setDtrRts() {
-        int value = (mRts ? 0x2 : 0) | (mDtr ? 0x1 : 0);
-        sendAcmControlMessage(SET_CONTROL_LINE_STATE, value, null);
+        @Override
+        public EnumSet<ControlLine> getControlLines() throws IOException {
+            EnumSet<ControlLine> set = EnumSet.noneOf(ControlLine.class);
+            if(mRts) set.add(ControlLine.RTS);
+            if(mDtr) set.add(ControlLine.DTR);
+            return set;
+        }
+
+        @Override
+        public EnumSet<ControlLine> getSupportedControlLines() throws IOException {
+            return EnumSet.of(ControlLine.RTS, ControlLine.DTR);
+        }
+
+        @Override
+        public void setBreak(boolean value) throws IOException {
+            sendAcmControlMessage(SEND_BREAK, value ? 0xffff : 0, null);
+        }
+
     }
 
     public static Map<Integer, int[]> getSupportedDevices() {
-        final Map<Integer, int[]> supportedDevices = new LinkedHashMap<Integer, int[]>();
-        supportedDevices.put(Integer.valueOf(UsbId.VENDOR_ARDUINO),
+        final Map<Integer, int[]> supportedDevices = new LinkedHashMap<>();
+        supportedDevices.put(UsbId.VENDOR_ARDUINO,
                 new int[] {
                         UsbId.ARDUINO_UNO,
                         UsbId.ARDUINO_UNO_R3,
@@ -274,24 +299,28 @@ public class CdcAcmSerialDriver extends CommonUsbSerialDriver {
                         UsbId.ARDUINO_MEGA_ADK,
                         UsbId.ARDUINO_MEGA_ADK_R3,
                         UsbId.ARDUINO_LEONARDO,
+                        UsbId.ARDUINO_MICRO,
                 });
-        supportedDevices.put(Integer.valueOf(UsbId.VENDOR_VAN_OOIJEN_TECH),
+        supportedDevices.put(UsbId.VENDOR_VAN_OOIJEN_TECH,
                 new int[] {
                     UsbId.VAN_OOIJEN_TECH_TEENSYDUINO_SERIAL,
                 });
-        supportedDevices.put(Integer.valueOf(UsbId.VENDOR_ATMEL),
+        supportedDevices.put(UsbId.VENDOR_ATMEL,
                 new int[] {
                     UsbId.ATMEL_LUFA_CDC_DEMO_APP,
-                    UsbId.ATMEL_ROBOCLAW,  // *ADDED
                 });
-        if (UsbId.DRIVER_CUSTOM == UsbId.DRIVER_CDCACM) // *ADDED conditional
-        {
-        	supportedDevices.put(Integer.valueOf(UsbId.VENDOR_CUSTOM),
+        supportedDevices.put(UsbId.VENDOR_LEAFLABS,
                 new int[] {
-                        UsbId.PRODUCT_CUSTOM
+                    UsbId.LEAFLABS_MAPLE,
                 });
-        }
- 
+        supportedDevices.put(UsbId.VENDOR_ARM,
+                new int[] {
+                    UsbId.ARM_MBED,
+                });
+        supportedDevices.put(UsbId.VENDOR_ST,
+                new int[] {
+                        UsbId.ST_CDC,
+                });
         return supportedDevices;
     }
 

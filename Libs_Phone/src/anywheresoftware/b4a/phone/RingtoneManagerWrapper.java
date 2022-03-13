@@ -27,6 +27,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.webkit.MimeTypeMap;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.IOnActivityResult;
 import anywheresoftware.b4a.BA.Events;
@@ -79,32 +80,25 @@ public class RingtoneManagerWrapper {
     public String GetContentDir() {
     	return anywheresoftware.b4a.objects.streams.File.ContentDir;
     }
-    /**
-     * Adds a sound file to the internal media store and return the Uri to the new entry.
-     *Dir - The file folder. Should be a folder under the storage card (public folder).
-     *FileName - The file name.
-     *Title - The entry title.
-     *IsAlarm - Whether this entry should be added to the alarms sounds list.
-     *IsNotification - Whether this entry should be added to the notifications sounds list.
-     *IsRingtone - Whether this entry should be added to the ringtones sounds list.
-     *IsMusic - Whether this entry should be added to the music list.
-     *
-     *Example:<code>
-	 *Dim r As RingtoneManager
-	 *Dim u As String
-	 *u = r.AddToMediaStore(File.DirRootExternal, "bounce.mp3", "Bounce!", True, True, True, True)
-	 *r.SetDefault(r.TYPE_RINGTONE, u)</code>
-     */
+  /**
+   * This method no longer works due to restrictions in Android.
+   */
     public String AddToMediaStore(String Dir, String FileName, String Title, boolean IsAlarm, boolean IsNotification, boolean IsRingtone, boolean IsMusic) {
     	File k = new File(Dir, FileName);
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
         values.put(MediaStore.MediaColumns.TITLE, Title);
-        values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/*");
+        String mType = "audio/*";
+        String mExtension = MimeTypeMap.getFileExtensionFromUrl(k.getAbsolutePath());
+        if (mExtension != null) {
+            mType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(mExtension);
+        }
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mType);
         values.put(MediaStore.Audio.Media.IS_RINGTONE, IsRingtone);
         values.put(MediaStore.Audio.Media.IS_NOTIFICATION, IsNotification);
         values.put(MediaStore.Audio.Media.IS_ALARM, IsAlarm);
         values.put(MediaStore.Audio.Media.IS_MUSIC, IsMusic);
+        
         return BA.applicationContext.getContentResolver().insert(MediaStore.Audio.Media.getContentUriForPath(k.getAbsolutePath()), values).toString();
     }
     /**
@@ -117,7 +111,7 @@ public class RingtoneManagerWrapper {
 	/**
 	 * Returns the Uri of the default ringtone of a specific type.
 	 *Returns an empty string if no default is available.
-	 *Use Play to play the ringtone.
+	 *Use Play to play the ringtone._
 	 */
 	public String GetDefault(int Type) {
 		Uri u = RingtoneManager.getDefaultUri(Type);

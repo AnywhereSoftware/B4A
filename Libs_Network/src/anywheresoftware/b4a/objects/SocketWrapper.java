@@ -68,7 +68,7 @@ import anywheresoftware.b4a.BA.Version;
  *Once a socket is connected you should use its <code>InputStream</code> and <code>OutputStream</code> to communicate with the other machine.
  */
 @ShortName("Socket")
-@Version(1.52f)
+@Version(1.53f)
 @Events(values = {"Connected (Successful As Boolean)"})
 @Permissions(values = {"android.permission.INTERNET"})
 public class SocketWrapper implements CheckForReinitialize{
@@ -329,7 +329,7 @@ public class SocketWrapper implements CheckForReinitialize{
 			if (wifiInfo != null) {
 				int ip = wifiInfo.getIpAddress();
 				if (ip != 0) {
-					String ipString = String.format("%d.%d.%d.%d",
+					String ipString = String.format(BA.cul, "%d.%d.%d.%d",
 							(ip & 0xff),
 							(ip >> 8 & 0xff),
 							(ip >> 16 & 0xff),

@@ -60,7 +60,7 @@ import anywheresoftware.b4a.objects.streams.File;
  *<b>Should be a process global variable.</b>
  */
 @ShortName("SimpleExoPlayer")
-@Version(1.50f)
+@Version(1.52f)
 @DependsOn(values={"exoplayer-2.13.3.aar", 
 		"exoplayer-common-2.13.3.aar", 
 		"exoplayer-core-2.13.3.aar", 
@@ -71,7 +71,7 @@ import anywheresoftware.b4a.objects.streams.File;
 		"exoplayer-ui-2.13.3.aar", 
 		"extension-rtmp-2.13.3.aar", 
 		"exoplayer_desugar.jar", "androidx.media:media", "androidx.recyclerview:recyclerview", 
-		"guava-30.1.1.jar"})
+		"guava-30.1.1.WithoutListenable.jar", "com.google.guava:listenablefuture"})
 @Permissions(values = {"android.permission.INTERNET"})
 @Events(values = {"Complete", "Error (Message As String)", "Ready", "TrackChanged"})
 public class SimpleExoPlayerWrapper  {

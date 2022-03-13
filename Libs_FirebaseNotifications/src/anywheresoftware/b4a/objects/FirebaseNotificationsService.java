@@ -104,7 +104,7 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 		}
 	}
 	@DependsOn(values={"com.google.firebase:firebase-messaging", "com.google.firebase:firebase-core"})
-	@Version(2.00f)
+	@Version(2.01f)
 	@ShortName("FirebaseMessaging")
 	@Events(values={"TokenRefresh (Token As String)", "MessageArrived (Message As RemoteMessage)"})
 	public static class FirebaseMessageWrapper extends AbsObjectWrapper<FirebaseMessaging> {
