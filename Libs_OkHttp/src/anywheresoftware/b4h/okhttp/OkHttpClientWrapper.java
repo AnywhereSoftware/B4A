@@ -123,6 +123,7 @@ public class OkHttpClientWrapper {
 
 		builder.sslSocketFactory(sslSocketFactory, trustManager);
 		client = builder.build();
+
 		
 
 	}
