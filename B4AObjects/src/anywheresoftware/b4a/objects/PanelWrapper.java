@@ -131,7 +131,7 @@ public class PanelWrapper extends ViewWrapper<ViewGroup> implements IterableList
 			if (false)
 				WarningEngine.warn(WarningEngine.ZERO_SIZE_PANEL);
 		}
-		LayoutValues lv = LayoutBuilder.loadLayout(LayoutFile, ba, false, this.getObject(), null, false).layoutValues;
+		LayoutValues lv = LayoutBuilder.loadLayout(LayoutFile, ba, false, this.getObject(), null).layoutValues;
 		if (width_fill_parent)
 			setWidth(LayoutParams.FILL_PARENT);
 		return lv;

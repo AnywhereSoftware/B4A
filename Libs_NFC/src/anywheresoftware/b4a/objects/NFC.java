@@ -39,6 +39,7 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.NfcAdapter.CreateNdefMessageCallback;
 import android.nfc.tech.TagTechnology;
+import android.os.Build;
 import android.os.Parcelable;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
@@ -55,7 +56,7 @@ import anywheresoftware.b4j.object.JavaObject;
 /**
  * Supports reading and writing NFC tags and supports sending messages between two Android devices.
  */
-@Version(2.01f)
+@Version(2.02f)
 @ShortName("NFC")
 @Permissions(values={"android.permission.NFC"})
 @Events(values={"CreateMessage As List"})
@@ -101,9 +102,12 @@ public class NFC {
 		Intent i = new Intent(ba.context, ba.activity.getClass());
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+		int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (Build.VERSION.SDK_INT >= 31)
+			flags |= 33554432; //FLAG_MUTABLE
 		PendingIntent pi = PendingIntent.getActivity(ba.context, 0
 				, i,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				flags);
 		try {
 			NfcAdapter.getDefaultAdapter(BA.applicationContext).enableForegroundDispatch(ba.activity, pi, null, null);
 		} catch (IllegalStateException ie) {

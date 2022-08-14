@@ -69,7 +69,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(11.50f)
+@Version(11.80f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -199,11 +199,10 @@ public class Common {
 
 	/**
 	 *Returns the object that raised the event.
-	 *Only valid while inside the event sub.
+	 *Only valid while inside the event sub and before calls to Sleep or Wait For.
 	 *Example:<code>
 	 *Sub Button_Click
-	 * Dim b As Button
-	 * b = Sender
+	 * Dim b As B4XView = Sender
 	 * b.Text = "I've been clicked"
 	 *End Sub</code>
 	 */
@@ -646,7 +645,7 @@ public class Common {
 		final CharSequence[] items = new CharSequence[Items.getSize()];
 		boolean[] checked = new boolean[Items.getSize()];
 		int i = 0;
-		for (Entry<Object, Object> e : Items.getObject().entrySet()) {
+		for (Entry<Object, Object> e : ((Map.MyMap)Items.getObject()).entrySet()) {
 			if (e.getKey() instanceof String == false)
 				throw new RuntimeException("Keys must be strings.");
 			items[i] = (String)e.getKey();

@@ -1,6 +1,5 @@
 package anywheresoftware.b4a.keywords;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,35 +10,22 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import android.app.Activity;
 import android.graphics.drawable.Drawable;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.LayoutAnimationController;
-import android.view.animation.ScaleAnimation;
-import anywheresoftware.b4a.B4AActivity;
 import anywheresoftware.b4a.BA;
+import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BALayout;
 import anywheresoftware.b4a.ConnectorUtils;
 import anywheresoftware.b4a.DynamicBuilder;
 import anywheresoftware.b4a.ObjectWrapper;
-import anywheresoftware.b4a.BA.Hide;
-import anywheresoftware.b4a.BA.ShortName;
-import anywheresoftware.b4a.BALayout.LayoutParams;
 import anywheresoftware.b4a.objects.ActivityWrapper;
 import anywheresoftware.b4a.objects.CustomViewWrapper;
-import anywheresoftware.b4a.objects.TextViewWrapper;
 import anywheresoftware.b4a.objects.ViewWrapper;
-import anywheresoftware.b4a.objects.drawable.BitmapDrawable;
 import anywheresoftware.b4a.objects.streams.File;
 
 @Hide
@@ -68,11 +54,10 @@ public class LayoutBuilder {
 		}
 	}
 	public static LayoutValuesAndMap loadLayout(String file,  
-			BA ba, boolean isActivity, ViewGroup parent, LinkedHashMap<String, ViewWrapperAndAnchor> dynamicTable, boolean d4a) throws IOException {
+			BA ba, boolean isActivity, ViewGroup parent, LinkedHashMap<String, ViewWrapperAndAnchor> dynamicTable) throws IOException {
 		try {
 			tempBA = ba;
-			if (!d4a)
-				file = file.toLowerCase(BA.cul);
+			file = file.toLowerCase(BA.cul);
 			if (!file.endsWith(".bal"))
 				file = file + ".bal";
 			MapAndCachedStrings mcs = null;
@@ -155,7 +140,7 @@ public class LayoutBuilder {
 
 			}
 			din.close();
-			runScripts(file, chosen, dynamicTable, mainWidth, mainHeight, Common.Density, d4a);
+			runScripts(file, ba, chosen, parent, dynamicTable, mainWidth, mainHeight, Common.Density, props);
 			BALayout.setUserScale(1f);
 			if (customViewWrappers != null) {
 				for (CustomViewWrapper cvw : customViewWrappers) {
@@ -192,8 +177,8 @@ public class LayoutBuilder {
 			}
 		}
 	}
-	private static void runScripts(String file, LayoutValues lv, LinkedHashMap<String, ViewWrapperAndAnchor> views, int w, int h, float s,
-			boolean d4a) throws IllegalArgumentException, IllegalAccessException {
+	private static void runScripts(String file, BA ba, LayoutValues lv, View parent, LinkedHashMap<String, ViewWrapperAndAnchor> views, int w, int h, float s,
+			java.util.Map<String, Object> props) throws IllegalArgumentException, IllegalAccessException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("LS_");
 		for (int i = 0;i < file.length() - 4;i++) {
@@ -205,16 +190,13 @@ public class LayoutBuilder {
 		}
 		try {
 			Class<?> c = Class.forName(BA.packageName + ".designerscripts." + sb.toString());
-			Method m; 
 			try {
 				//global script
-				m = c.getMethod(variantToMethod(null), LinkedHashMap.class, int.class, int.class, float.class);
-				m.invoke(null, views, w, h, s);
+				runScriptMethod(c, variantToMethod(null), lv, ba, parent, views, props, w, h, s);
 			} catch (NoSuchMethodException e) {
 				//do nothing
 			}
-			m = c.getMethod(variantToMethod(lv), LinkedHashMap.class, int.class, int.class, float.class);
-			m.invoke(null, views, w, h, s);
+			runScriptMethod(c, variantToMethod(lv), lv, ba, parent, views, props, w, h, s);
 		} catch (ClassNotFoundException e) {
 		} catch (SecurityException e) {
 			e.printStackTrace();
@@ -224,6 +206,13 @@ public class LayoutBuilder {
 		}
 
 
+	}
+	private static void runScriptMethod(Class<?> c, String methodName, LayoutValues lv, BA ba, View parent, java.util.Map<String, anywheresoftware.b4a.keywords.LayoutBuilder.ViewWrapperAndAnchor> views
+			, java.util.Map<String, Object> props
+			, int w, int h, float scale) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		Method m; 
+		m = c.getMethod(methodName, BA.class, View.class, LayoutValues.class, java.util.Map.class, java.util.Map.class, int.class, int.class, float.class);
+		m.invoke(null, ba, parent, lv, props, views, w, h, scale);
 	}
 	private static double autoscale;
 	private static double screenSize = 0;
@@ -257,7 +246,7 @@ public class LayoutBuilder {
 	public static boolean isPortrait() {
 		return tempBA.vg.getHeight() >= tempBA.vg.getWidth();
 	}
-	public static void scaleAll(LinkedHashMap<String, ViewWrapperAndAnchor> views) {
+	public static void scaleAll(java.util.Map<String, ViewWrapperAndAnchor> views) {
 		for (ViewWrapperAndAnchor vwa : views.values()) {
 			if (vwa.vw.IsInitialized() == false)
 				continue;

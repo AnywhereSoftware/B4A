@@ -206,7 +206,7 @@ public class ActivityWrapper extends ViewWrapper<BALayout> implements IterableLi
 	@RaisesSynchronousEvents
 	public LayoutValues LoadLayout(String LayoutFile, BA ba) throws Exception {
 		AbsObjectWrapper.Activity_LoadLayout_Was_Called = true;
-		return LayoutBuilder.loadLayout(LayoutFile, ba, true, ba.vg, null, false).layoutValues;
+		return LayoutBuilder.loadLayout(LayoutFile, ba, true, ba.vg, null).layoutValues;
 	}
 	/**
 	 * <b>This method is deprecated.</b> It ignores the anchoring features and it will fail in Rapid Debug mode.
@@ -221,7 +221,7 @@ public class ActivityWrapper extends ViewWrapper<BALayout> implements IterableLi
 				dynamicTable.put(f.getName().substring(1), new ViewWrapperAndAnchor((ViewWrapper<?>) f.get(ba.activity), null));
 			}
 		}
-		LayoutBuilder.loadLayout(Layout, ba, false, vg, dynamicTable, false);
+		LayoutBuilder.loadLayout(Layout, ba, false, vg, dynamicTable);
 	}
 	private Activity getActivity() {
 		return (Activity)getObject().getContext();
