@@ -19,29 +19,30 @@
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.ConsumeResponseListener;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.ProductDetails.OneTimePurchaseOfferDetails;
+import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.Purchase.PurchasesResult;
+import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsParams.Product;
+import com.android.billingclient.api.QueryPurchasesParams;
 
 import android.app.Activity;
-
-import com.android.billingclient.api.BillingClient.BillingResponseCode;
-import com.android.billingclient.api.BillingClient.Builder;
-import com.android.billingclient.api.BillingClient.SkuType;
-
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.DependsOn;
@@ -64,8 +65,8 @@ import anywheresoftware.b4a.BA.Version;
 		"ConsumeCompleted (Result As BillingResult)",
 "AcknowledgeCompleted (Result As BillingResult)"})
 @Permissions(values= {"com.android.vending.BILLING"})
-@Version(1.11f)
-@DependsOn(values = { "billing-3.0.1.aar" })
+@Version(5.0f)
+@DependsOn(values = { "billing-5.0.0.aar" })
 @ShortName("BillingClient")
 public class BillingClientWrapper {
 	private String eventName;
@@ -152,21 +153,26 @@ public class BillingClientWrapper {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object QuerySkuDetails(BA ba, String SkuType, anywheresoftware.b4a.objects.collections.List SKUs) {
-		SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+		QueryProductDetailsParams.Builder params = QueryProductDetailsParams.newBuilder();
 		final Object sender = new Object();
-		client.querySkuDetailsAsync(params.setSkusList((List) SKUs.getObject()).setType(SkuType).build(),
-				new SkuDetailsResponseListener() {
+		ArrayList<Product> products = new ArrayList<QueryProductDetailsParams.Product>();
+		for (Object sku : SKUs.getObject()) {
+			products.add(QueryProductDetailsParams.Product.newBuilder().setProductId((String)sku).setProductType(SkuType).build());
+		}
+		client.queryProductDetailsAsync(params.setProductList(products).build(),
+				new ProductDetailsResponseListener() {
+					
+					@Override
+					public void onProductDetailsResponse(BillingResult var1, List<ProductDetails> var2) {
+						anywheresoftware.b4a.objects.collections.List res = new anywheresoftware.b4a.objects.collections.List();
+						if (var2 != null)
+							res.setObject((List)var2);
+						ba.raiseEventFromDifferentThread(sender, null, 0, eventName + "_skuquerycompleted", true,
+								new Object[] { AbsObjectWrapper.ConvertToWrapper(new BillingResultWrapper(), var1),
+										res });
+					}
+				});
 
-			@Override
-			public void onSkuDetailsResponse(BillingResult var1, List<SkuDetails> var2) {
-				anywheresoftware.b4a.objects.collections.List res = new anywheresoftware.b4a.objects.collections.List();
-				if (var2 != null)
-					res.setObject((List)var2);
-				ba.raiseEventFromDifferentThread(sender, null, 0, eventName + "_skuquerycompleted", true,
-						new Object[] { AbsObjectWrapper.ConvertToWrapper(new BillingResultWrapper(), var1),
-								res });
-			}
-		});
 		return sender;
 	}
 	/**
@@ -187,11 +193,17 @@ public class BillingClientWrapper {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object QueryPurchases(BA ba, String SkuType) {
 		final Object sender = new Object();
-		PurchasesResult pr = client.queryPurchases(SkuType);
-		anywheresoftware.b4a.objects.collections.List purchases = new anywheresoftware.b4a.objects.collections.List();
-		if (pr.getPurchasesList() != null)
-			purchases.setObject((List)pr.getPurchasesList());
-		ba.raiseEventFromDifferentThread(sender, null, 0, eventName + "_purchasesquerycompleted", true, new Object[] {AbsObjectWrapper.ConvertToWrapper(new BillingResultWrapper(), pr.getBillingResult()), purchases});
+		client.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(SkuType).build(), new PurchasesResponseListener() {
+			
+			@Override
+			public void onQueryPurchasesResponse(BillingResult billingResult, List<Purchase> ppurchases) {
+				anywheresoftware.b4a.objects.collections.List purchases = new anywheresoftware.b4a.objects.collections.List();
+				if (ppurchases != null)
+					purchases.setObject((List)ppurchases);
+				ba.raiseEventFromDifferentThread(sender, null, 0, eventName + "_purchasesquerycompleted", true, new Object[] {AbsObjectWrapper.ConvertToWrapper(new BillingResultWrapper(), billingResult), purchases});
+			}
+		});
+		
 		return sender;
 	}
 	/**
@@ -246,8 +258,10 @@ public class BillingClientWrapper {
 	 */
 	public BillingResultWrapper LaunchBillingFlow (BA ba, SkuDetailsWrapper Sku) {
 		Activity activity = ba.sharedProcessBA.activityBA.get().activity;
+		ArrayList<ProductDetailsParams> productsDetails = new ArrayList<BillingFlowParams.ProductDetailsParams>();
+		productsDetails.add(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(Sku.getObject()).build());
 		return (BillingResultWrapper) AbsObjectWrapper.ConvertToWrapper(new BillingResultWrapper(),
-				client.launchBillingFlow(activity, BillingFlowParams.newBuilder().setSkuDetails(Sku.getObject()).build()));
+				client.launchBillingFlow(activity, BillingFlowParams.newBuilder().setProductDetailsParamsList(productsDetails).build()));
 	}
 	/**
 	 * Tests whether the purchase was signed properly.
@@ -262,18 +276,19 @@ public class BillingClientWrapper {
 	 * Product details.
 	 */
 	@ShortName("SkuDetails")
-	public static class SkuDetailsWrapper extends AbsObjectWrapper<SkuDetails> {
+	public static class SkuDetailsWrapper extends AbsObjectWrapper<ProductDetails> {
 		/**
 		 * Returns the product id.
 		 */
 		public String getSku() {
-			return getObject().getSku();
+			return getObject().getProductId();
 		}
 		/**
-		 * Returns the formatted price with the currency sign. 
+		 * Returns the formatted price with the currency sign for one time purchase offers.
 		 */
 		public String getPrice() {
-			return getObject().getPrice();
+			OneTimePurchaseOfferDetails details = getObject().getOneTimePurchaseOfferDetails();
+			return details == null ? "" : details.getFormattedPrice();
 		}
 		/**
 		 * Returns the product description.
@@ -364,10 +379,10 @@ public class BillingClientWrapper {
 			return getObject().getOrderId();
 		}
 		/**
-		 * Returns the product id.
+		 * Returns the product id 
 		 */
 		public String getSku() {
-			return getObject().getSku();
+			return getObject().getProducts().size() == 0 ? "" : getObject().getProducts().get(0);
 		}
 		/**
 		 * Returns the time the product was purchased.

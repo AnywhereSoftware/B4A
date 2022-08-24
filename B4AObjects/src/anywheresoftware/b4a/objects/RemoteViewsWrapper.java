@@ -9,6 +9,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Parcel;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -81,8 +82,11 @@ public class RemoteViewsWrapper {
 			Intent i = new Intent(BA.applicationContext, Common.getComponentClass(ba, null, true));
 			i.putExtra("b4a_internal_event", eventName + "_click");
 			int id = getIdForView(ba, name);
+			int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+			if (Build.VERSION.SDK_INT >= 31)
+				flags |= 33554432; //FLAG_MUTABLE
 			PendingIntent pi = PendingIntent.getBroadcast(ba.context,
-					id, i , PendingIntent.FLAG_UPDATE_CURRENT);
+					id, i , flags);
 			rv.setOnClickPendingIntent(id, pi);
 		}
 	}
