@@ -30,6 +30,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
@@ -43,7 +44,7 @@ import anywheresoftware.b4a.objects.streams.File.OutputStreamWrapper;
  *This library requires Android SDK 12 or above (Android 3.1 or above).
  *You should configure Basic4android to use android.jar from android-12 or above.
  */
-@Version(0.98f)
+@Version(1.01f)
 @ShortName("UsbManager")
 public class UsbManagerWrapper {
 	private UsbManager manager;
@@ -142,17 +143,25 @@ public class UsbManagerWrapper {
 		uu.usbInterface = Interface;
 		return uu;
 	}
+	private int getIntentFlags() {
+		int flags = 0;
+		if (Build.VERSION.SDK_INT >= 31)
+			flags |= 67108864 ; //FLAG_IMMUTABLE
+		return flags;
+	}
 	/**
 	 * Shows a dialog that asks the user to allow your application to access the USB accessory.
 	 */
 	public void RequestAccessoryPermission(UsbAccessoryWrapper Accessory) {
-		manager.requestPermission(Accessory.accessory, PendingIntent.getBroadcast(BA.applicationContext, 0, new Intent(ACTION_USB_PERMISSION), 0));
+		
+		manager.requestPermission(Accessory.accessory, PendingIntent.getBroadcast(BA.applicationContext, 0, new Intent(ACTION_USB_PERMISSION), getIntentFlags()));
 	}
 	/**
 	 * Shows a dialog that asks the user to allow your application to access the USB device.
 	 */
 	public void RequestPermission(UsbDevice Device) {
-		manager.requestPermission(Device, PendingIntent.getBroadcast(BA.applicationContext, 0, new Intent(ACTION_USB_PERMISSION), 0));
+		
+		manager.requestPermission(Device, PendingIntent.getBroadcast(BA.applicationContext, 0, new Intent(ACTION_USB_PERMISSION), getIntentFlags()));
 	}
 	/**
 	 * Tests whether your application has permission to access this accessory.

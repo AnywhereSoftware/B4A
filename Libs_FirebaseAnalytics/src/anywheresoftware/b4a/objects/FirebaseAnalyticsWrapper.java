@@ -20,6 +20,10 @@
 import java.io.Serializable;
 import java.util.Map.Entry;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import android.os.Bundle;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
@@ -28,17 +32,12 @@ import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.objects.collections.Map;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.firebase.analytics.FirebaseAnalytics;
-
 @ShortName("FirebaseAnalytics")
-@Version(2.00f)
-@DependsOn(values={"com.google.firebase:firebase-crash", "com.google.firebase:firebase-analytics", 
-					"com.google.firebase:firebase-core"})
+@Version(3.00f)
+@DependsOn(values={"com.google.android.gms:play-services-measurement", "com.google.firebase:firebase-common", "com.google.android.gms:play-services-measurement-api"})
 public class FirebaseAnalyticsWrapper extends AbsObjectWrapper<FirebaseAnalytics>{
 	/**
-	 * Initializes the object. FirebaseAnalytics should be a process global variable in the Starter service. It should be initialized in Service_Create sub.
+	 * Initializes the object. FirebaseAnalytics should be 
 	 */
 	public void Initialize() {
 		setObject(FirebaseAnalytics.getInstance(BA.applicationContext));
@@ -48,10 +47,11 @@ public class FirebaseAnalyticsWrapper extends AbsObjectWrapper<FirebaseAnalytics
 	 *EventName - Event name.
 	 *Parameters - Map of parameters. Pass Null if not needed.
 	 */
+	@SuppressWarnings("unchecked")
 	public void SendEvent(String EventName, Map Parameters) {
 		Bundle bundle = new Bundle();
 		if (Parameters != null && Parameters.IsInitialized()) {
-			for (Entry<Object, Object> e : Parameters.getObject().entrySet()) {
+			for (Entry e : ((java.util.Map<Object,Object>)Parameters.getObject()).entrySet()) {
 				bundle.putSerializable(String.valueOf(e.getKey()), (Serializable)e.getValue());
 			}
 		}

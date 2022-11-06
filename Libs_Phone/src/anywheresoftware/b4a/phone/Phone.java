@@ -61,7 +61,7 @@ import anywheresoftware.b4a.objects.ActivityWrapper;
 import anywheresoftware.b4a.objects.collections.List;
 
 @ShortName("Phone")
-@Version(2.52f)
+@Version(2.53f)
 public class Phone {
 	
 	/**
@@ -675,10 +675,13 @@ public class Phone {
 			SmsManager sm = SmsManager.getDefault();
 			Intent i1 = new Intent("b4a.smssent");
 			i1.putExtra("phone", PhoneNumber);
-			PendingIntent pi = ReceiveSentNotification ? PendingIntent.getBroadcast(BA.applicationContext, 0,i1, PendingIntent.FLAG_UPDATE_CURRENT) : null;
+			int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+			if (Build.VERSION.SDK_INT >= 31)
+				flags |= 33554432; //FLAG_MUTABLE
+			PendingIntent pi = ReceiveSentNotification ? PendingIntent.getBroadcast(BA.applicationContext, 0,i1, flags) : null;
 			Intent i2 = new Intent("b4a.smsdelivered");
 			i2.putExtra("phone", PhoneNumber);
-			PendingIntent pi2 = ReceiveDeliveredNotification ? PendingIntent.getBroadcast(BA.applicationContext, 0,i2, PendingIntent.FLAG_UPDATE_CURRENT) : null;
+			PendingIntent pi2 = ReceiveDeliveredNotification ? PendingIntent.getBroadcast(BA.applicationContext, 0,i2, flags) : null;
 			sm.sendTextMessage(PhoneNumber, null, Text, pi, pi2);
 		}
 

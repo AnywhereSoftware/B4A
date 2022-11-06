@@ -17,15 +17,17 @@
  
  package anywheresoftware.b4a.objects;
 
-import java.io.Serializable;
 import java.util.Map.Entry;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Handler;
-import android.os.Parcelable;
-import android.service.notification.StatusBarNotification;
+import android.os.Looper;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.DependsOn;
@@ -36,16 +38,7 @@ import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.keywords.Common;
 import anywheresoftware.b4a.objects.collections.Map;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.FirebaseInstanceIdService;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingService;
-import com.google.firebase.messaging.RemoteMessage;
-import com.google.firebase.messaging.RemoteMessage.Notification;
-import com.sun.rowset.internal.BaseRow;
-import com.sun.xml.internal.fastinfoset.stax.events.EventBase;
 @Hide
-
 public class FirebaseNotificationsService extends FirebaseMessagingService{
 	private static boolean firstMessage = true;
 	private static Handler handler;
@@ -55,7 +48,7 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 	public void onCreate() {
 		super.onCreate();
 		try {
-			handler = new Handler();
+			handler = new Handler(Looper.getMainLooper());
 			ServiceClass = Class.forName(getPackageName() + ".firebasemessaging");
 			ReceiverClass = Class.forName(getPackageName() + ".firebasemessaging$firebasemessaging_BR");
 		} catch (ClassNotFoundException e) {
@@ -69,6 +62,10 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 		i.setAction("b4a_firebasemessaging");
 		i.putExtra("event", event);
 		return i;
+	}
+	@Override
+	public void onNewToken(String token) {
+		sendBroadcast(createIntent(this, "b4a_tokenrefresh"));
 	}
 	@Override
 	public void onMessageReceived(final RemoteMessage remoteMessage) {
@@ -96,35 +93,42 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 				}
 			}});
 	}
-	@Hide
-	public static class InstanceService extends FirebaseInstanceIdService {
-		@Override
-		public void onTokenRefresh() {
-			sendBroadcast(createIntent(this, "b4a_tokenrefresh"));
-		}
-	}
+
 	@DependsOn(values={"com.google.firebase:firebase-messaging", "com.google.firebase:firebase-core"})
-	@Version(2.01f)
+	@Version(3.00f)
 	@ShortName("FirebaseMessaging")
 	@Events(values={"TokenRefresh (Token As String)", "MessageArrived (Message As RemoteMessage)"})
 	public static class FirebaseMessageWrapper extends AbsObjectWrapper<FirebaseMessaging> {
 		private BA ba;
 		private String eventName;
+		private String token = "";
 		public void Initialize(BA ba, String EventName) {
 			setObject(FirebaseMessaging.getInstance());
 			this.ba = ba;
 			this.eventName = EventName.toLowerCase(BA.cul);
+			updateToken();
+		}
+		private void updateToken() {
+			FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+
+				@Override
+				public void onSuccess(String arg0) {
+					token = arg0;
+					ba.raiseEventFromUI(this, eventName + "_tokenrefresh", token);
+				}
+			});
 		}
 		/**
 		 * Should be called from Service_Start. Returns true if the intent was handled.
 		 */
+		@SuppressWarnings("deprecation")
 		public boolean HandleIntent(Intent Intent) {
 			if (Intent == null || "b4a_firebasemessaging".equals(Intent.getAction()) == false)
 				return false;
 			Intent.setExtrasClassLoader(RemoteMessage.class.getClassLoader());
 			String event = Intent.getStringExtra("event");
-			if (event.equals("b4a_tokenrefresh"))
-				ba.raiseEventFromUI(this, eventName + "_tokenrefresh", getToken());
+			if (event.equals("b4a_tokenrefresh")) 
+				updateToken();
 			else if (event.equals("b4a_messagereceived")) {
 				RemoteMessage rm = Intent.getParcelableExtra("message");
 				ba.raiseEventFromUI(this, eventName + "_messagearrived", AbsObjectWrapper.ConvertToWrapper(new RemoteMessageWrapper(), rm));
@@ -136,7 +140,7 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 		 *The token is only needed when sending messages to a specific device.
 		 */
 		public String getToken() {
-			return BA.returnString(FirebaseInstanceId.getInstance().getToken());
+			return BA.returnString(token);
 		}
 		/**
 		 * Subscribes to the specified topic.
@@ -196,18 +200,6 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 			}
 			return m;
 		}
-		//		public String getNotificationBody() {
-		//			Notification n = getObject().getNotification();
-		//			if (n == null)
-		//				return "";
-		//			return BA.returnString(n.getBody());
-		//		}
-		//		public String getNotificationTitle() {
-		//			Notification n = getObject().getNotification();
-		//			if (n == null)
-		//				return "";
-		//			return BA.returnString(n.getTitle());
-		//		}
 
 	}
 

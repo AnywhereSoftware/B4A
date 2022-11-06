@@ -14,25 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- package anywheresoftware.b4a.objects;
+
+package anywheresoftware.b4a.objects;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import android.app.Activity;
@@ -51,12 +52,13 @@ import anywheresoftware.b4a.BA.ShortName;
 @ShortName("FirebaseAuth")
 @DependsOn(values={"com.google.firebase:firebase-auth", "com.google.android.gms:play-services-auth", "com.google.firebase:firebase-core"})
 @Events(values={"SignedIn (User As FirebaseUser)", "TokenAvailable (User As FirebaseUser, Success As Boolean, TokenId As String)", "SignError (Error As Exception)"})
-@Version(2.01f)
+@Version(3.00f)
 public class FirebaseAuthWrapper  {
 	@Hide
 	public FirebaseAuth auth;
+	@Hide
+	public GoogleSignInClient client;
 	private IOnActivityResult ion;
-	private boolean signOut;
 	private String eventName;
 	private BA firstBA;
 	/**
@@ -75,15 +77,13 @@ public class FirebaseAuthWrapper  {
 					ba.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, eventName + "_signedin", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new FirebaseUserWrapper(), user)});
 			}
 		});
-		
+
 		GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-		.requestIdToken(BA.applicationContext.getResources().getString(GetResourceId("string", "default_web_client_id")))
-		.requestEmail()
-		.build();
-		googleClient = new GoogleApiClient.Builder(ba.context)
-		.addApi(Auth.GOOGLE_SIGN_IN_API, gso).addConnectionCallbacks(this).addOnConnectionFailedListener(this)
-		.build();
-		googleClient.connect();
+				.requestIdToken(BA.applicationContext.getResources().getString(GetResourceId("string", "default_web_client_id")))
+				.requestEmail()
+				.requestProfile()
+				.build();
+		client = GoogleSignIn.getClient(ba.context, gso);
 	}
 	/**
 	 * Returns the current signed in user. Returns an uninitialized object if there is no user.
@@ -91,42 +91,21 @@ public class FirebaseAuthWrapper  {
 	public FirebaseUserWrapper getCurrentUser() {
 		return (FirebaseUserWrapper) AbsObjectWrapper.ConvertToWrapper(new FirebaseUserWrapper(), auth.getCurrentUser());
 	}
-	
-	@Hide
-	@Override
-	public void onConnected(Bundle arg0) {
-		if (signOut) {
-			Auth.GoogleSignInApi.signOut(googleClient);
-		}
-		signOut = false;
-		
-		
-	}
-	@Hide
-	@Override
-	public void onConnectionSuspended(int arg0) {
-		
-	}
 
+	
 	/**
 	 * Sign outs from Firebase and Google.
 	 */
 	public void SignOutFromGoogle() {
 		auth.signOut();
-		if (googleClient.isConnected()) {
-			Auth.GoogleSignInApi.signOut(googleClient);
-		}
-		else {
-			signOut = true;
-			googleClient.connect();
-		}
+		client.signOut();
 	}
 	/**
 	 * Start the sign in process.
 	 */
 	public void SignInWithGoogle(final BA ba) {
 		final Activity act = ba.sharedProcessBA.activityBA.get().activity;
-		Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleClient);
+		Intent signInIntent = client.getSignInIntent();
 		BA.LogInfo("SignInWithGoogle called");
 
 		ion = new IOnActivityResult() {
@@ -135,15 +114,15 @@ public class FirebaseAuthWrapper  {
 			public void ResultArrived(int resultCode, Intent intent) {
 				BA.LogInfo("SignInWithGoogle.ResultArrived");
 
-				GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(intent);
-				if (result.isSuccess()) {
+				Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);
+				try {
+					GoogleSignInAccount account = task.getResult(ApiException.class);
 					BA.LogInfo("ResultArrived Success");
-					GoogleSignInAccount account = result.getSignInAccount();
 					firebaseAuthWithGoogle(act, account);
-				} else {
-					BA.LogInfo("ResultArrived Error: " +  result.getStatus() + ", " + result.getStatus().getStatusMessage());
+				} catch (ApiException e) {
+					BA.LogInfo("ResultArrived Error: " +  e.toString());
 					firstBA.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, 
-							eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), new Exception(CommonStatusCodes.getStatusCodeString(result.getStatus().getStatusCode())))});
+							eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), e)});
 				}
 			}
 
@@ -162,16 +141,16 @@ public class FirebaseAuthWrapper  {
 			public void onSuccess(GetTokenResult arg0) {
 				ba.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, eventName + "_tokenavailable", false, new Object[] {User, true, arg0.getToken()});
 			}
-			
+
 		}).addOnFailureListener(new OnFailureListener() {
 
 			@Override
 			public void onFailure(Exception arg0) {
 				ba.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, eventName + "_tokenavailable", false, new Object[] {User, false, ""});
 			}
-			
+
 		});
-		
+
 	}
 	private void firebaseAuthWithGoogle(Activity act, GoogleSignInAccount acct) {
 		AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
@@ -180,13 +159,13 @@ public class FirebaseAuthWrapper  {
 			@Override
 			public void onComplete(Task<AuthResult> task) {
 				try {
-				BA.LogInfo("firebaseAuthWithGoogle success: " + task.isSuccessful());
-				if (task.isSuccessful())
-					BA.LogInfo("result: " + task.getResult());
-				else {
-					BA.LogInfo("error: " + task.getException());
-					firstBA.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), task.getException())});
-				}
+					BA.LogInfo("firebaseAuthWithGoogle success: " + task.isSuccessful());
+					if (task.isSuccessful())
+						BA.LogInfo("result: " + task.getResult());
+					else {
+						BA.LogInfo("error: " + task.getException());
+						firstBA.raiseEventFromDifferentThread(FirebaseAuthWrapper.this, null, 0, eventName + "_signerror", false, new Object[] {AbsObjectWrapper.ConvertToWrapper(new B4AException(), task.getException())});
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -197,7 +176,7 @@ public class FirebaseAuthWrapper  {
 	private int GetResourceId(String Type, String Name) {
 		return BA.applicationContext.getResources().getIdentifier(Name, Type, BA.packageName);
 	}
-	
+
 	@ShortName("FirebaseUser")
 	public static class FirebaseUserWrapper extends AbsObjectWrapper<FirebaseUser> {
 		public String getEmail() {
@@ -212,8 +191,8 @@ public class FirebaseAuthWrapper  {
 		public String getPhotoUrl() {
 			return getObject().getPhotoUrl() == null ? "" : getObject().getPhotoUrl().toString();
 		}
-		
+
 	}
-	
+
 
 }

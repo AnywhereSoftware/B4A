@@ -466,6 +466,7 @@ public class SQL implements CheckForReinitialize{
 	 * This type is an extension to the Cursor type.
 	 *It adds a single method (NextRow).
 	 *Its interface is the same as B4J and B4i ResultSet type.
+	 *Note that ResultSet should always be closed when it is no longer needed. 
 	 */
 	@ShortName("ResultSet")
 	public static class ResultSetWrapper extends CursorWrapper {

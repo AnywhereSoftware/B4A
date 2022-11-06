@@ -57,11 +57,10 @@ import anywheresoftware.b4a.objects.LabelWrapper;
 import anywheresoftware.b4a.objects.PanelWrapper;
 import anywheresoftware.b4a.objects.collections.Map;
 
-@Version(1.04f)
+@Version(2.00f)
 @ShortName("FacebookSdk")
 @Permissions(values={"android.permission.INTERNET"})
-@DependsOn(values={"facebook-core-11.2.0.aar", "facebook-login-11.2.0.aar",  "facebook-common-11.2.0.aar", "com.android.support:cardview-v7", "com.android.support:appcompat-v7"
-		,"kotlin-stdlib-1.5.10", "kotlin-stdlib-jdk8-1.5.10"})
+@DependsOn(values={"facebook-core-14.1.1.aar", "facebook-login-14.1.1.aar",  "facebook-common-14.1.1.aar", "androidx.cardview:cardview"})
 @Events(values= {"SignError (Error As Exception)"})
 public class FacebookSdkWrapper {
 	@Hide
