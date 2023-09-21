@@ -1,7 +1,5 @@
 package anywheresoftware.b4a.objects;
 
-import com.secneo.sdk.Helper;
-
 import android.app.Application;
 import android.content.Context;
 import android.util.Log;

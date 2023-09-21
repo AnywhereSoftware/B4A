@@ -1,11 +1,11 @@
 package anywheresoftware.b4a.objects;
 
+import anywheresoftware.b4a.AbsObjectWrapper;
+import anywheresoftware.b4a.BA.ShortName;
 import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.common.model.LocationCoordinate2D;
-import anywheresoftware.b4a.AbsObjectWrapper;
-import anywheresoftware.b4a.BA.ShortName;
 
 @ShortName("DJIFlightControllerCurrentState")
 public class DJIFlightControllerCurrentStateWrapper extends AbsObjectWrapper<FlightControllerState>{

@@ -1,24 +1,24 @@
 package anywheresoftware.b4a.objects;
 
+import anywheresoftware.b4a.AbsObjectWrapper;
+import anywheresoftware.b4a.BA;
+import anywheresoftware.b4a.BA.Events;
+import anywheresoftware.b4a.BA.ShortName;
 import dji.common.error.DJIError;
 import dji.common.mission.waypoint.Waypoint;
 import dji.common.mission.waypoint.WaypointAction;
 import dji.common.mission.waypoint.WaypointActionType;
 import dji.common.mission.waypoint.WaypointExecutionProgress;
 import dji.common.mission.waypoint.WaypointMission;
+import dji.common.mission.waypoint.WaypointMission.Builder;
 import dji.common.mission.waypoint.WaypointMissionDownloadEvent;
 import dji.common.mission.waypoint.WaypointMissionExecutionEvent;
 import dji.common.mission.waypoint.WaypointMissionFinishedAction;
 import dji.common.mission.waypoint.WaypointMissionState;
 import dji.common.mission.waypoint.WaypointMissionUploadEvent;
-import dji.common.mission.waypoint.WaypointMission.Builder;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
-import anywheresoftware.b4a.AbsObjectWrapper;
-import anywheresoftware.b4a.BA;
-import anywheresoftware.b4a.BA.Events;
-import anywheresoftware.b4a.BA.ShortName;
 
 @ShortName("DJIWaypointMissionOperator")
 @Events(values={"MissionProgress (ExecutionEvent As Object, TargetWaypointIndex As Int)", "MissionStart", "MissionFinish (Error As String)"}) 

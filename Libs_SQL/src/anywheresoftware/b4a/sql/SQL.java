@@ -353,7 +353,7 @@ public class SQL implements CheckForReinitialize{
 			return getObject().getColumnName(Index);
 		}
 		/**
-		 * Gets the numbers or rows available in the result set.
+		 * Gets the numbers of rows available in the result set.
 		 */
 		public int getRowCount() {
 			return getObject().getCount();

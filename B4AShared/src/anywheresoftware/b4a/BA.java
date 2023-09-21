@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- package anywheresoftware.b4a;
+
+package anywheresoftware.b4a;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -47,12 +47,10 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Handler;
 import android.os.Process;
-import android.preference.PreferenceManager.OnActivityResultListener;
 import android.util.Log;
-import anywheresoftware.b4a.B4AClass.ImplB4AClass;
+import anywheresoftware.b4a.BA.SharedProcessBA.ModuleType;
 
 public class BA {
 	//Static fields
@@ -68,6 +66,7 @@ public class BA {
 	private volatile static B4AThreadPool threadPool;
 	public static String debugLine;
 	public static int debugLineNum;
+	@SuppressWarnings("deprecation")
 	public final static Handler handler = new Handler();
 	public final static Locale cul = Locale.US;
 	private static HashMap<String, ArrayList<Runnable>> uninitializedActivitiesMessagesDuringPaused;
@@ -88,7 +87,8 @@ public class BA {
 
 	public static class SharedProcessBA {
 		public WeakReference<BA> activityBA; //from process to activity
-		public final boolean isService;
+		public enum ModuleType {ACTIVITY, SERVICE, RECEIVER}
+		public final ModuleType moduleType;
 		int numberOfStackedEvents = 0;
 		Exception lastException = null;
 		boolean ignoreEventsFromOtherThreadsDuringMsgboxError = false;
@@ -97,8 +97,8 @@ public class BA {
 		HashMap<Integer, WeakReference<IOnActivityResult>> onActivityResultMap;
 		int onActivityResultCode = 1;
 		public Object sender; //not used
-		public SharedProcessBA(boolean isService) {
-			this.isService = isService;
+		public SharedProcessBA(ModuleType moduleType) {
+			this.moduleType = moduleType;
 		}
 	}
 	static {
@@ -118,9 +118,12 @@ public class BA {
 	}
 
 	public BA (Context context, BALayout vg, BA processBA, String notUsed, String className) {
+		this(context, vg, processBA, 
+				(context != null && context instanceof Service) ? ModuleType.SERVICE : ModuleType.ACTIVITY, className);
+	}
+	public BA (Context context, BALayout vg, BA processBA, ModuleType moduleType, String className) {
 
 		Activity activity;
-		boolean isService;
 		if (context != null) {
 			density = context.getResources().getDisplayMetrics().density;
 			try {
@@ -135,12 +138,17 @@ public class BA {
 		}
 		else
 			activity = null;
-		if (context != null && context instanceof Service)  {
-			isService = true;
+		if (moduleType == ModuleType.SERVICE)  {
 			applicationContext = ((Service)context).getApplication();
+		} else if (moduleType == ModuleType.RECEIVER) {
+			if (applicationContext == null) {
+				if (context.getApplicationContext() instanceof Application)
+					applicationContext = (Application)context.getApplicationContext();
+				else
+					BA.LogInfo("application context not set.");
+			}
 		}
-		else 
-			isService = false;
+
 		if (context != null && packageName == null) {
 			this.packageName = context.getPackageName();
 			try {
@@ -165,7 +173,7 @@ public class BA {
 		this.processBA = processBA;
 		this.vg = vg;
 		if (processBA == null)
-			sharedProcessBA = new SharedProcessBA(isService);
+			sharedProcessBA = new SharedProcessBA(moduleType);
 		else
 			sharedProcessBA = null;
 	}
@@ -341,7 +349,7 @@ public class BA {
 					LogInfo("Event: " + event + ", was ignored.");
 					return;
 				}
-				if (!sharedProcessBA.isService && sharedProcessBA.activityBA == null) {
+				if (sharedProcessBA.moduleType == ModuleType.ACTIVITY && sharedProcessBA.activityBA == null) {
 					LogInfo("Reposting event: " + event);
 					handler.post(this); //don't raise event during the activity creation.
 				}
@@ -369,12 +377,12 @@ public class BA {
 					Log("Event: " + event + ", was ignored.");
 					return;
 				}
-				if (!sharedProcessBA.isService && sharedProcessBA.activityBA == null) {
+				if (sharedProcessBA.moduleType == ModuleType.ACTIVITY && sharedProcessBA.activityBA == null) {
 					Log("Reposting event: " + event);
 					handler.post(this); //don't raise event during the activity creation.
 				}
 				else if (sharedProcessBA.isActivityPaused) {
-					if (sharedProcessBA.isService)  {
+					if (sharedProcessBA.moduleType == ModuleType.SERVICE)  {
 						Log("Ignoring event as service was destroyed: " + event);
 					}
 					else {
@@ -441,7 +449,7 @@ public class BA {
 		}
 		sharedProcessBA.isActivityPaused = value;
 		if (value == false) { //run waiting messages (only in activities).
-			if (sharedProcessBA.isService)
+			if (sharedProcessBA.moduleType != ModuleType.ACTIVITY)
 				return;
 			if (sharedProcessBA.messagesDuringPaused == null && uninitializedActivitiesMessagesDuringPaused != null) {
 				String cls = className;
@@ -530,7 +538,7 @@ public class BA {
 			return processBA.isActivityPaused();
 		return sharedProcessBA.isActivityPaused;
 	}
-	
+
 	public static boolean isAnyActivityVisible() {
 		try {
 			if (BA.packageName == null)
@@ -750,7 +758,7 @@ public class BA {
 		}
 	}
 	@SuppressWarnings("unchecked")
-	public static <T> T gm(Map map, Object key, T defValue) {
+	public static <T> T gm(@SuppressWarnings("rawtypes") Map map, Object key, T defValue) {
 		T o = (T)map.get(key);
 		if (o == null)
 			return defValue;
@@ -800,7 +808,7 @@ public class BA {
 		}
 		return true;
 	}
-	
+
 	public static boolean isShellModeRuntimeCheck(BA ba) {
 		if (ba.processBA != null)
 			return isShellModeRuntimeCheck(ba.processBA);
@@ -948,7 +956,7 @@ public class BA {
 	public static @interface DesignerProperties {
 		Property[] values();
 	}
-	
+
 	@Hide
 	@Retention(RetentionPolicy.SOURCE)
 	public static @interface CustomClass {

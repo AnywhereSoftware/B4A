@@ -65,7 +65,7 @@ public class Beeper {
 		Initialize2(Duration, Frequency, VOLUME_MUSIC);
 	}
 	/**
-	 * Similar to Initialize. Allows you to set the volume channel.
+	 * Similar to Initialize. Allows you to set the voice channel.
 	 */
     public void Initialize2(int Duration, int Frequency, int VoiceChannel) {
     	double duration = Duration / 1000d;

@@ -4,7 +4,6 @@ import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.Events;
 import anywheresoftware.b4a.BA.ShortName;
-import anywheresoftware.b4a.objects.DJIBaseComponentWrapper.B4ACompletionCallback;
 import anywheresoftware.b4a.objects.DJIFlightControllerCurrentStateWrapper.DJILocation2DWrapper;
 import dji.common.error.DJIError;
 import dji.common.mission.followme.FollowMeHeading;

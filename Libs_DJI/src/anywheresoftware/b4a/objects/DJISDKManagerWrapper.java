@@ -1,20 +1,11 @@
 package anywheresoftware.b4a.objects;
 
-import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.DependsOn;
 import anywheresoftware.b4a.BA.Events;
 import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
-
-
-import android.app.Application;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.widget.Toast;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.common.realname.AircraftBindingState;
@@ -28,6 +19,9 @@ import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback;
 import dji.sdk.useraccount.UserAccountManager;
+import dji.v5.common.error.IDJIError;
+import dji.v5.manager.SDKManager;
+import dji.v5.manager.interfaces.ISDKManager;
 
 @ShortName("DJISDKManager")
 @Version(4.80f)
@@ -38,7 +32,7 @@ import dji.sdk.useraccount.UserAccountManager;
 		"ProductConnected (AircraftData As Object)", "ProductDisconnected", "BindingStateChanged (State As String)"})
 	public class DJISDKManagerWrapper  {
 	@Hide
-	public DJISDKManager manager;
+	public ISDKManager manager;
 	private BA ba;
 	private String eventName;
 	private boolean activationListenerAdded;
@@ -50,10 +44,58 @@ import dji.sdk.useraccount.UserAccountManager;
 	 *Note that an internet connection is required on the first run.
 	 */
 	public void Initialize(final BA ba, String EventName) {
-		manager = DJISDKManager.getInstance();
+		manager = SDKManager.getInstance();
 		this.ba = ba;
 		this.eventName = EventName.toLowerCase(BA.cul);
-		DJISDKManager.getInstance().registerApp(ba.context, new SDKManagerCallback() {
+		manager.init(ba.context, new dji.v5.manager.interfaces.SDKManagerCallback() {
+			
+			@Override
+			public void onRegisterSuccess() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onRegisterFailure(IDJIError paramIDJIError) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onProductDisconnect(int paramInt) {
+				ba.raiseEventFromDifferentThread(DJISDKManagerWrapper.this, null, 0, eventName + "_productdisconnected", true, null);
+				
+			}
+			
+			@Override
+			public void onProductConnect(int productId) {
+				ba.raiseEventFromDifferentThread(DJISDKManagerWrapper.this, null, 0, eventName + "_productconnected", true, new Object[] {productId});
+				
+			}
+			
+			@Override
+			public void onProductChanged(int paramInt) {
+				BA.LogInfo("onProductChanged: " + paramInt);
+				
+			}
+			
+			@Override
+			public void onInitProcess(dji.v5.common.register.DJISDKInitEvent paramDJISDKInitEvent, int paramInt) {
+				BA.LogInfo("onInitProcess: " + paramDJISDKInitEvent + ", " + paramInt);
+				if (paramDJISDKInitEvent == dji.v5.common.register.DJISDKInitEvent.INITIALIZE_COMPLETE)
+					manager.registerApp();
+					
+				
+			}
+			
+			@Override
+			public void onDatabaseDownloadProgress(long paramLong1, long paramLong2) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+		SDKManager.getInstance().registerApp(ba.context, new SDKManagerCallback() {
 			
 			@Override
 			public void onRegister(DJIError paramDJIError) {
@@ -86,13 +128,13 @@ import dji.sdk.useraccount.UserAccountManager;
 			
 			@Override
 			public void onProductDisconnect() {
-				ba.raiseEventFromDifferentThread(DJISDKManagerWrapper.this, null, 0, eventName + "_productdisconnected", true, null);
+				
 				
 			}
 			
 			@Override
 			public void onProductConnect(BaseProduct arg0) {
-				ba.raiseEventFromDifferentThread(DJISDKManagerWrapper.this, null, 0, eventName + "_productconnected", true, new Object[] {arg0});
+				
 				
 			}
 			
@@ -115,7 +157,7 @@ import dji.sdk.useraccount.UserAccountManager;
 
 			@Override
 			public void onProductChanged(BaseProduct arg0) {
-				BA.LogInfo("onProductChanged: " + arg0);
+				
 				
 			}
 		}); 

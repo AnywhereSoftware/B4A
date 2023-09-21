@@ -194,7 +194,7 @@ public class RemoteViewsWrapper {
 	 */
 	public void UpdateWidget(BA ba) throws ClassNotFoundException {
 		checkNull();
-		ComponentName cn = new ComponentName(ba.context, Class.forName(ba.className + "$" + ba.getClassNameWithoutPackage() + "_BR"));
+		ComponentName cn = new ComponentName(ba.context, Class.forName(ba.className));
 		AppWidgetManager.getInstance(ba.context).updateAppWidget(cn, current);
 		current = null;
 	}

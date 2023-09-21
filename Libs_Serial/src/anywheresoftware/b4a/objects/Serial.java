@@ -404,6 +404,7 @@ public class Serial implements CheckForReinitialize{
 		/**
 		 * Turns on the Bluetooth adapter. The adapter will not be immediately ready. You should use the StateChanged event to find when it is enabled.
 		 *This method returns False if the adapter cannot be enabled.
+		 *<b>Always fails on Android 13+ with targetSdkVersion >= 13.</b>
 		 */
 		public boolean Enable() {
 			return blueAdapter.enable();
@@ -411,6 +412,7 @@ public class Serial implements CheckForReinitialize{
 		/**
 		 * Turns off the Bluetooth adapter. The adapter will not be immediately disabled. You should use the StateChanged event to monitor the adapter.
 		 *This method returns False if the adapter cannot be disabled.
+		 *<b>Always fails on Android 13+ with targetSdkVersion >= 13.</b>
 		 */
 		public boolean Disable() {
 			return blueAdapter.disable();

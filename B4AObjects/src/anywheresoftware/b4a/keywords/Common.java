@@ -18,6 +18,7 @@ import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -69,7 +70,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(11.81f)
+@Version(12.5f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -863,6 +864,24 @@ public class Common {
 
 	}
 	/**
+	 * Starts the given receiver. This will cause Receiver_Receive to run.
+	 */
+	public static void StartReceiver(final BA mine, final Object Receiver) {
+		BA.handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					Intent in = getComponentIntent(mine, Receiver);
+					BA.applicationContext.sendBroadcast(in);
+				} catch (ClassNotFoundException e) {
+					throw new RuntimeException(e);
+				}
+				
+			}
+		});
+	}
+	/**
 	 * Starts the given service. The service will be first created if it was not started before.
 	 *The target service will be started once the program is free to process its message queue.
 	 *Note that you cannot show a Msgbox after this call and before the service starts.
@@ -893,6 +912,7 @@ public class Common {
 			Msgbox.isDismissing = true; //no msgbox and debugging are allowed till the service starts
 		}
 	}
+	
 	private static void StartServiceImpl(BA mine, Object Service) throws ClassNotFoundException {
 		Intent in = getComponentIntent(mine, Service);
 		try {
@@ -907,35 +927,43 @@ public class Common {
 			}
 		}
 	}
+	
 	/**
-	 * Schedules the given service to start at the given time.
-	 *Service - The service module. Pass Me when calling from a service module that schedules itself.
-	 *Time - The time to start the service. If this time has already past the service will be started now.
-	 *The actual delivery time might change to reduce battery usage. Use StartServiceAtExact if the exact time is important.
-	 *DuringSleep - Whether to start the service when the device is sleeping. If set to false and the device is sleeping
-	 *at the specified time, the service will be started when the device wakes up.
-	 *Setting DuringSleep to True can have a large impact on the battery usage.
-	 *StartServiceAt can be used to schedule a repeating task. You should call it under Service_Start to schedule the next task.
-	 *This call cancels previous scheduled tasks (for the same service).
-	 *Example:<code>
-	 *StartServiceAt(SQLService, DateTime.Now + 30 * 1000, false) 'will start after 30 seconds.</code>
+	 * Use StartReceiverAt instead.
 	 */
-	public static void StartServiceAt(BA mine, Object Service, long Time, boolean DuringSleep) throws ClassNotFoundException {
+	public static void StartServiceAt(BA mine, Object Receiver, long Time, boolean DuringSleep) throws ClassNotFoundException {
+		StartReceiverAt(mine, Receiver, Time, DuringSleep);
+	}
+	
+	/**
+	 * Schedules the given receiver to start at the given time. Does not work with services in newer versions of Android.
+	 *Receiver - The receiver module. Pass Me when calling from a receiver module that schedules itself.
+	 *Time - The time to start the receiver. If this time has already past the receiver will be started now.
+	 *The actual delivery time might change to reduce battery usage. Use StartServiceAtExact if the exact time is important.
+	 *DuringSleep - Whether to start the receiver when the device is sleeping. If set to false and the device is sleeping
+	 *at the specified time, the receiver will be started when the device wakes up.
+	 *Setting DuringSleep to True can have a large impact on the battery usage.
+	 *This call cancels previous scheduled tasks (for the same receiver).
+	 *Example:<code>
+	 *StartReceiverAt(Receiver1, DateTime.Now + 30 * 1000, false) 'will start after 30 seconds.</code>
+	 */
+	public static void StartReceiverAt(BA mine, Object Receiver, long Time, boolean DuringSleep) throws ClassNotFoundException {
 		AlarmManager am = (AlarmManager) BA.applicationContext.getSystemService(Context.ALARM_SERVICE);
-		PendingIntent pi = createPendingIntentForAlarmManager(mine, Service);
+		PendingIntent pi = createPendingIntentForAlarmManager(mine, Receiver);
 		if (Build.VERSION.SDK_INT >= 23 && DuringSleep)
 			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, Time, pi);
 		else
 			am.set(DuringSleep ? AlarmManager.RTC_WAKEUP : AlarmManager.RTC, Time, pi);
 	}
 	/**
-	 * Same as StartServiceAt for Android versions up to 4.3 (API 18).
+	 * Similar to StartServiceAt.
 	 *On Android 4.4+ it forces the OS to start the service at the exact time. This method will have a larger impact on the battery compared
 	 *to StartServiceAt and should only be used in cases where it is important for the service to start at the exact time.
+	 *This method requires special permission on Android 12+.
 	 */
-	public static void StartServiceAtExact(BA mine, Object Service, long Time, boolean DuringSleep) throws Exception {
+	public static void StartServiceAtExact(BA mine, Object Receiver, long Time, boolean DuringSleep) throws Exception {
 		AlarmManager am = (AlarmManager) BA.applicationContext.getSystemService(Context.ALARM_SERVICE);
-		PendingIntent pi = createPendingIntentForAlarmManager(mine, Service);
+		PendingIntent pi = createPendingIntentForAlarmManager(mine, Receiver);
 		if (Build.VERSION.SDK_INT >= 23 && DuringSleep)
 			am.setExactAndAllowWhileIdle (AlarmManager.RTC_WAKEUP, Time, pi);
 		else if (Build.VERSION.SDK_INT >= 19)
@@ -974,8 +1002,10 @@ public class Common {
 		if (resClass == null)
 			return null;
 		if (receiver) {
-			String serviceName = resClass.getName().substring(resClass.getName().lastIndexOf(".") + 1);
-			resClass = Class.forName(resClass.getName() + "$" + serviceName + "_BR");
+			if (!BroadcastReceiver.class.isAssignableFrom(resClass)) {
+				String serviceName = resClass.getName().substring(resClass.getName().lastIndexOf(".") + 1);
+				resClass = Class.forName(resClass.getName() + "$" + serviceName + "_BR");
+			}
 		}
 		return resClass;
 	}
@@ -1151,6 +1181,8 @@ public class Common {
 									retries = 0; //send message to message queue immediately
 							} else if (Service.class.isAssignableFrom(cls)) {
 								StartService(mine, Component);
+							} else if (BroadcastReceiver.class.isAssignableFrom(cls)) {
+								ba.applicationContext.sendBroadcast(getComponentIntent(mine, Component));
 							}
 						}
 						if (--retries > 0)

@@ -1,15 +1,12 @@
 package anywheresoftware.b4a.objects;
 
-import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
-import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.Events;
 import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.ShortName;
-import anywheresoftware.b4a.objects.drawable.CanvasWrapper.BitmapWrapper;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;

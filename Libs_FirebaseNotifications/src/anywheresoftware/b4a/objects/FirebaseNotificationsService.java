@@ -25,6 +25,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -50,7 +51,11 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 		try {
 			handler = new Handler(Looper.getMainLooper());
 			ServiceClass = Class.forName(getPackageName() + ".firebasemessaging");
-			ReceiverClass = Class.forName(getPackageName() + ".firebasemessaging$firebasemessaging_BR");
+			if (BroadcastReceiver.class.isAssignableFrom(ServiceClass)) {
+				ReceiverClass = ServiceClass;
+			} else {
+				ReceiverClass = Class.forName(getPackageName() + ".firebasemessaging$firebasemessaging_BR");
+			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			BA.LogError("FirebaseMessaging not found.");
@@ -77,7 +82,7 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 				try {
 					if (firstMessage || Common.IsPaused(null, ServiceClass) == false) {
 						firstMessage = false;
-							sendBroadcast(i);
+						sendBroadcast(i);
 					} else {
 						BA.handler.postDelayed(new Runnable() {
 
@@ -95,7 +100,7 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 	}
 
 	@DependsOn(values={"com.google.firebase:firebase-messaging", "com.google.firebase:firebase-core"})
-	@Version(3.00f)
+	@Version(3.10f)
 	@ShortName("FirebaseMessaging")
 	@Events(values={"TokenRefresh (Token As String)", "MessageArrived (Message As RemoteMessage)"})
 	public static class FirebaseMessageWrapper extends AbsObjectWrapper<FirebaseMessaging> {

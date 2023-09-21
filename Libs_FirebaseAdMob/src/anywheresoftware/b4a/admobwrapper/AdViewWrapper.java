@@ -69,7 +69,7 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 	 */
 	public static Object SIZE_IAB_LEADERBOARD = AdSize.LEADERBOARD;
 	/**
-	 * 300dip x 250dip - tablet only
+	 * 300dip x 250dip
 	 */
 	public static Object SIZE_IAB_MRECT = AdSize.MEDIUM_RECTANGLE;
 	/**

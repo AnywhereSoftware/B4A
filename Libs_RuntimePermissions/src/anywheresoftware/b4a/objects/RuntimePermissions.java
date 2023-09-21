@@ -22,17 +22,16 @@ import java.util.ArrayList;
 
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.DependsOn;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
-import anywheresoftware.b4a.objects.RuntimePermissions.RequestHandler;
 
 @ShortName("RuntimePermissions")
-@Version(1.12f)
-@DependsOn(values={"com.android.support:support-v4"})
+@Version(1.20f)
+@DependsOn(values={"androidx.core:core"})
 /**
  *This type is compatible with all versions of Android. It allows your app to use the new permissions system that was introduced in Android 6 (API 23).
  */
@@ -63,7 +62,8 @@ public class RuntimePermissions {
 	public static final java.lang.String PERMISSION_RECEIVE_MMS = "android.permission.RECEIVE_MMS";
 	public static final java.lang.String PERMISSION_READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
 	public static final java.lang.String PERMISSION_WRITE_EXTERNAL_STORAGE = "android.permission.WRITE_EXTERNAL_STORAGE";
-
+	public static final java.lang.String PERMISSION_POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
+	
 	/**
 	 * Checks whether the application has been granted the specified permission.
 	 *This method can be called from a Service.

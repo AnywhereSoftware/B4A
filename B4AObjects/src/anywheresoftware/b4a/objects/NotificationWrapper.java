@@ -31,7 +31,7 @@ import anywheresoftware.b4a.keywords.Common;
  *n.Notify(1)</code>
  */
 @ShortName("Notification")
-@Permissions(values={"android.permission.VIBRATE"})
+@Permissions(values={"android.permission.VIBRATE", "android.permission.POST_NOTIFICATIONS"})
 public class NotificationWrapper extends AbsObjectWrapper<Object>{
 	@Hide
 	public static class NotificationData {
