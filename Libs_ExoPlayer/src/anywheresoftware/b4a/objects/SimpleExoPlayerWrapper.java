@@ -19,30 +19,24 @@
 
 import java.io.IOException;
 
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
-import com.google.android.exoplayer2.source.LoopingMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.ProgressiveMediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.source.dash.DashMediaSource;
-import com.google.android.exoplayer2.source.hls.HlsMediaSource;
-import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
-
-import android.content.pm.PackageManager.NameNotFoundException;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.PlaybackException;
+import androidx.media3.common.Player;
+import androidx.media3.common.Player.TimelineChangeReason;
+import androidx.media3.common.Timeline;
+import androidx.media3.common.Tracks;
+import androidx.media3.datasource.DefaultDataSource;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.dash.DashMediaSource;
+import androidx.media3.exoplayer.hls.HlsMediaSource;
+import androidx.media3.exoplayer.rtsp.RtspMediaSource;
+import androidx.media3.exoplayer.smoothstreaming.SsMediaSource;
+import androidx.media3.exoplayer.source.ConcatenatingMediaSource;
+import androidx.media3.exoplayer.source.LoopingMediaSource;
+import androidx.media3.exoplayer.source.MediaSource;
+import androidx.media3.exoplayer.source.ProgressiveMediaSource;
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
+import androidx.media3.exoplayer.trackselection.TrackSelector;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.DependsOn;
 import anywheresoftware.b4a.BA.Events;
@@ -50,7 +44,6 @@ import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.Permissions;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
-import anywheresoftware.b4a.keywords.B4AApplication;
 import anywheresoftware.b4a.objects.collections.List;
 import anywheresoftware.b4a.objects.streams.File;
 
@@ -59,39 +52,41 @@ import anywheresoftware.b4a.objects.streams.File;
  *Can be used together with SimpleExoPlayerView.
  *<b>Should be a process global variable.</b>
  */
+@SuppressWarnings("deprecation")
 @ShortName("SimpleExoPlayer")
-@Version(1.52f)
-@DependsOn(values={"exoplayer-2.13.3.aar", 
-		"exoplayer-common-2.13.3.aar", 
-		"exoplayer-core-2.13.3.aar", 
-		"exoplayer-dash-2.13.3.aar", 
-		"exoplayer-extractor-2.13.3.aar", 
-		"exoplayer-hls-2.13.3.aar", 
-		"exoplayer-smoothstreaming-2.13.3.aar", 
-		"exoplayer-ui-2.13.3.aar", 
-		"extension-rtmp-2.13.3.aar", 
-		"exoplayer_desugar.jar", "androidx.media:media", "androidx.recyclerview:recyclerview", 
-		"guava-30.1.1.WithoutListenable.jar", "com.google.guava:listenablefuture"})
+@Version(3.0f)
+@DependsOn(values={
+		"media3-common-1.2.0.aar",
+		"media3-container-1.2.0.aar",
+		"media3-database-1.2.0.aar",
+		"media3-datasource-1.2.0.aar",
+		"media3-decoder-1.2.0.aar",
+		"media3-exoplayer-1.2.0.aar",
+		"media3-exoplayer-dash-1.2.0.aar",
+		"media3-exoplayer-hls-1.2.0.aar",
+		"media3-exoplayer-rtsp-1.2.0.aar",
+		"media3-exoplayer-smoothstreaming-1.2.0.aar",
+		"media3-extractor-1.2.0.aar",
+		"media3-ui-1.2.0.aar",
+		"androidx.media:media", "androidx.recyclerview:recyclerview", 
+		"guava-31.1-android.jar"})
 @Permissions(values = {"android.permission.INTERNET"})
 @Events(values = {"Complete", "Error (Message As String)", "Ready", "TrackChanged"})
 public class SimpleExoPlayerWrapper  {
 	@Hide
-	public SimpleExoPlayer player;
+	public ExoPlayer player;
 	@Hide
 	public TrackSelector trackSelector;
 	private int currentState;
 	private String eventName;
 	public void InitializeCustom (final BA ba, String EventName, Object NativePlayer) {
 		eventName = EventName.toLowerCase(BA.cul);
-		player = (SimpleExoPlayer)NativePlayer;
-		player.addListener(new Player.EventListener() {
+		player = (ExoPlayer)NativePlayer;
+		player.addListener(new Player.Listener() {
 
+			public void onTimelineChanged(Timeline timeline, @TimelineChangeReason int reason) {}
 			@Override
-			public void onLoadingChanged(boolean isLoading) {
-			}
-
-			@Override
-			public void onPlayerError(ExoPlaybackException error) {
+			public void onPlayerError(PlaybackException error) {
 				ba.raiseEvent(SimpleExoPlayerWrapper.this, eventName + "_error", String.valueOf(error.getCause()));
 			}
 
@@ -107,127 +102,21 @@ public class SimpleExoPlayerWrapper  {
 				}
 			}
 
-
 			@Override
-			public void onPlaybackParametersChanged(
-					PlaybackParameters playbackParameters) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onRepeatModeChanged(int repeatMode) {
-				
-			}
-
-			@Override
-			public void onTracksChanged(TrackGroupArray trackGroups,
-					TrackSelectionArray trackSelections) {
+			public void onTracksChanged(Tracks tracks) {
 				ba.raiseEventFromUI(SimpleExoPlayerWrapper.this, eventName + "_trackchanged");
 			}
 
-			@Override
-			public void onPositionDiscontinuity(int arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onSeekProcessed() {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onShuffleModeEnabledChanged(boolean arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onTimelineChanged(Timeline arg0, Object arg1, int arg2) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onIsPlayingChanged(boolean arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onPlaybackSuppressionReasonChanged(int arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onTimelineChanged(Timeline arg0, int arg1) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onEvents(Player arg0, com.google.android.exoplayer2.Player.Events arg1) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onExperimentalOffloadSchedulingEnabledChanged(boolean offloadSchedulingEnabled) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onExperimentalSleepingForOffloadChanged(boolean arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onMediaItemTransition(MediaItem mediaItem, int reason) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onIsLoadingChanged(boolean isLoading) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onPlaybackStateChanged(int state) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onStaticMetadataChanged(java.util.List<Metadata> arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-			
 		});
 	}
 	/**
 	 * Initializes the player.
 	 */
 	public void Initialize(final BA ba, String EventName) {
-		AdaptiveTrackSelection.Factory videoTrackSelectionFactory =
-		    new AdaptiveTrackSelection.Factory();
-		trackSelector =
-		    new DefaultTrackSelector(videoTrackSelectionFactory);
-		player = ExoPlayerFactory.newSimpleInstance(BA.applicationContext, trackSelector);
-		InitializeCustom(ba, EventName, player);
+		trackSelector = new DefaultTrackSelector(ba.context);
+		ExoPlayer.Builder builder = new ExoPlayer.Builder(ba.context);
+		builder.setTrackSelector(trackSelector);
+		InitializeCustom(ba, EventName, builder.build());
 	}
 	/**
 	 * Concatenates multiple sources.
@@ -259,7 +148,7 @@ public class SimpleExoPlayerWrapper  {
 	 * Creates a Uri source for non-streaming media resources.
 	 */
 	public Object CreateUriSource (String Uri) {
-		return new ProgressiveMediaSource.Factory(createDefaultDataFactory()).createMediaSource(android.net.Uri.parse(Uri));
+		return new ProgressiveMediaSource.Factory(createDefaultDataFactory()).createMediaSource(MediaItem.fromUri(android.net.Uri.parse(Uri)));
 	}
 	/**
 	 * Creates a loop source. The child source will be played multiple times.
@@ -272,27 +161,29 @@ public class SimpleExoPlayerWrapper  {
 	 * Creates a HLS (Http live streaming) source.
 	 */
 	public Object CreateHLSSource (String Uri)  {
-		return new HlsMediaSource.Factory(createDefaultDataFactory()).createMediaSource(android.net.Uri.parse(Uri));
+		return new HlsMediaSource.Factory(createDefaultDataFactory()).createMediaSource(MediaItem.fromUri(android.net.Uri.parse(Uri)));
 	}
 	/**
 	 * Creates a Dash (Dynamic Adaptive Streaming over Http) source.
 	 */
 	public Object CreateDashSource (String Uri) {
-		return new DashMediaSource.Factory(createDefaultDataFactory()).createMediaSource(android.net.Uri.parse(Uri));
+		return new DashMediaSource.Factory(createDefaultDataFactory()).createMediaSource(MediaItem.fromUri(android.net.Uri.parse(Uri)));
+	}
+	/**
+	 * Creates a Rtsp source.
+	 */
+	public Object CreateRtspSource (String Uri) {
+		return new RtspMediaSource.Factory().createMediaSource(MediaItem.fromUri(android.net.Uri.parse(Uri)));
 	}
 	/**
 	 * Creates a Smooth Streaming source.
 	 */
 	public Object CreateSmoothStreamingSource (String Uri) {
-		return new SsMediaSource.Factory(createDefaultDataFactory()).createMediaSource(android.net.Uri.parse(Uri));
+		return new SsMediaSource.Factory(createDefaultDataFactory()).createMediaSource(MediaItem.fromUri(android.net.Uri.parse(Uri)));
 	}
 	@Hide
-	public DefaultDataSourceFactory createDefaultDataFactory() {
-		try {
-			return new DefaultDataSourceFactory(BA.applicationContext, Util.getUserAgent(BA.applicationContext, B4AApplication.getLabelName()));
-		} catch (NameNotFoundException e) {
-			throw new RuntimeException(e);
-		}
+	public DefaultDataSource.Factory createDefaultDataFactory() {
+		return new DefaultDataSource.Factory(BA.applicationContext);
 	}
 	
 	/**
@@ -305,7 +196,8 @@ public class SimpleExoPlayerWrapper  {
 	 * Prepares the media source. The Ready event will be raised when the playback is ready. You can call play immediately after calling this method.
 	 */
 	public void Prepare (Object Source) {
-		player.prepare((MediaSource)Source);
+		player.setMediaSource((MediaSource)Source);
+		player.prepare();
 	}
 	/**
 	 * Starts or resumes playback. If the source is currently loading then it will starting playing when ready.
@@ -353,6 +245,6 @@ public class SimpleExoPlayerWrapper  {
 	 * Returns the index of the window currently played.
 	 */
 	public int getCurrentWindowIndex() {
-		return player.getCurrentWindowIndex();
+		return player.getCurrentMediaItemIndex();
 	}
 }

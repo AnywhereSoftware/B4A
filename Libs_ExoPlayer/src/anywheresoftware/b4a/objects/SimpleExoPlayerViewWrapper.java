@@ -17,6 +17,8 @@
  
  package anywheresoftware.b4a.objects;
 
+import androidx.media3.ui.AspectRatioFrameLayout;
+import androidx.media3.ui.PlayerView;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.DesignerProperties;
 import anywheresoftware.b4a.BA.Hide;
@@ -24,8 +26,6 @@ import anywheresoftware.b4a.BA.Property;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.keywords.Common.DesignerCustomView;
 import anywheresoftware.b4a.objects.collections.Map;
-
-import com.google.android.exoplayer2.ui.PlayerView;
 
 /**
  * A player interface. Should be added as a custom view with the designer.
@@ -63,7 +63,7 @@ public class SimpleExoPlayerViewWrapper extends ViewWrapper<PlayerView> implemen
 	 */
 	public void setResizeMode(String s) {
 		try {
-			getObject().setResizeMode(com.google.android.exoplayer2.ui.AspectRatioFrameLayout.class.getField("RESIZE_MODE_" + s).getInt(null));
+			getObject().setResizeMode(AspectRatioFrameLayout.class.getField("RESIZE_MODE_" + s).getInt(null));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

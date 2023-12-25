@@ -78,7 +78,7 @@ import anywheresoftware.b4a.objects.streams.File;
 @CustomClasses(values = {
 		@CustomClass(fileNameWithoutExtension="customview", name="Custom View (XUI)")	
 	})
-@Version(2.30f)
+@Version(2.32f)
 @ShortName("B4XView")
 @ActivityObject
 public class B4XViewWrapper extends AbsObjectWrapper<Object>{
@@ -278,7 +278,7 @@ public class B4XViewWrapper extends AbsObjectWrapper<Object>{
 	public void setFont(B4XFont f) {
 		LabelWrapper lw = asLabelWrapper();
 		lw.setTextSize(f.textSize);
-		lw.setTypeface(f.typeface);
+		lw.setTypeface(f.getTypeface());
 	}
 
 	public void SetTextAlignment(String Vertical, String Horizontal)  {
@@ -705,6 +705,12 @@ public class B4XViewWrapper extends AbsObjectWrapper<Object>{
 		}
 		public TypefaceWrapper ToNativeFont() {
 			return (TypefaceWrapper)AbsObjectWrapper.ConvertToWrapper(new TypefaceWrapper(), typeface);
+		}
+		@Hide
+		public Typeface getTypeface() {
+			if (typeface == null)
+				throw new NullPointerException("font not set");
+			return typeface;
 		}
 
 	}

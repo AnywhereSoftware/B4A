@@ -156,7 +156,7 @@ public class B4XCanvas {
 		public float getWidth() {
 			return rf.right - rf.left;
 		}
-		public void setWidth(int w) {
+		public void setWidth(float w) {
 			rf.right = rf.left + w;
 		}
 		/**

@@ -210,10 +210,12 @@ public class ServiceHelper {
 			serviceProcessBA = ba;
 			return false;
 		}
-		public static void runWaitForLayouts() {
+		public static boolean runWaitForLayouts() {
 			if (waitForLayouts != null) {
 				BA.handler.post(waitForLayouts);
+				return true;
 			}
+			return false; //this will happen after a spontaneous service create.
 		}
 		public static void addWaitForLayout(Runnable r) {
 			waitForLayouts = r;
@@ -231,8 +233,9 @@ public class ServiceHelper {
 				serviceProcessBA = null;
 				return false;
 			} else {
-				if (ba.isActivityPaused() && waitForLayouts != null)
+				if (ba.isActivityPaused() && waitForLayouts != null) {
 					BA.handler.postDelayed(handleStart, 500);
+				}
 				else
 					handleStart.run();
 				return true;

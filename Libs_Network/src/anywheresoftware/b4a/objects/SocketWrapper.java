@@ -68,7 +68,7 @@ import anywheresoftware.b4a.BA.Version;
  *Once a socket is connected you should use its <code>InputStream</code> and <code>OutputStream</code> to communicate with the other machine.
  */
 @ShortName("Socket")
-@Version(1.53f)
+@Version(1.54f)
 @Events(values = {"Connected (Successful As Boolean)"})
 @Permissions(values = {"android.permission.INTERNET"})
 public class SocketWrapper implements CheckForReinitialize{
@@ -299,7 +299,8 @@ public class SocketWrapper implements CheckForReinitialize{
 	@Permissions(values = {"android.permission.INTERNET", "android.permission.ACCESS_WIFI_STATE",
 			"android.permission.ACCESS_NETWORK_STATE"})
 	public static class ServerSocketWrapper implements CheckForReinitialize{
-		private volatile ServerSocket ssocket;
+		@Hide
+		public volatile ServerSocket ssocket;
 		private BA ba;
 		private String eventName;
 		/**
