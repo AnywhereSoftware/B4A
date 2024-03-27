@@ -54,6 +54,12 @@ import anywheresoftware.b4a.BA.Property;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.keywords.Common.DesignerCustomView;
+import anywheresoftware.b4a.objects.MapFragmentWrapper.CameraPositionWrapper;
+import anywheresoftware.b4a.objects.MapFragmentWrapper.GoogleMapWrapper;
+import anywheresoftware.b4a.objects.MapFragmentWrapper.LatLngWrapper;
+import anywheresoftware.b4a.objects.MapFragmentWrapper.MarkerWrapper;
+import anywheresoftware.b4a.objects.MapFragmentWrapper.PolylineWrapper;
+import anywheresoftware.b4a.objects.MapFragmentWrapper.UiSettingsWrapper;
 import anywheresoftware.b4a.objects.collections.List;
 import anywheresoftware.b4a.objects.collections.Map;
 

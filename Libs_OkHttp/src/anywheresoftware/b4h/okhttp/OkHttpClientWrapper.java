@@ -92,7 +92,6 @@ public class OkHttpClientWrapper {
 	 */
 	public void Initialize(String EventName) {
 		client = sharedInit(EventName).build();
-		
 	}
 	/**
 	 * Similar to Initialize, with one important difference. All SSL certificates will be automatically accepted.

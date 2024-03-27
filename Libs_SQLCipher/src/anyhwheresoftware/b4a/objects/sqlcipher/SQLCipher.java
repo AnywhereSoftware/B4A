@@ -48,8 +48,8 @@ import anywheresoftware.b4a.sql.SQL;
  *See the <link>tutorial|http://www.basic4ppc.com/forum/basic4android-getting-started-tutorials/14965-android-database-encryption-sqlcipher-library.html</link> for more information.
  */
 @ShortName("SQLCipher")
-@Version(1.60f)
-@DependsOn(values={"android-database-sqlcipher-4.0.0.aar"})
+@Version(1.70f)
+@DependsOn(values={"android-database-sqlcipher-4.5.4.aar", "sqlite-2.4.0.aar"})
 public class SQLCipher extends SQL{
 	private SQLiteDatabase db;
 	private volatile ArrayList<Object[]> nonQueryStatementsList = new ArrayList<Object[]>();
