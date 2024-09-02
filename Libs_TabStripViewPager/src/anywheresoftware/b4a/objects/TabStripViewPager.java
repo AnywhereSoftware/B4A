@@ -39,8 +39,8 @@ import anywheresoftware.b4a.objects.collections.Map;
 import com.astuetz.PagerSlidingTabStrip;
 
 @ShortName("TabStrip")
-@Version(1.20f)
-@DependsOn(values={"com.android.support:support-v4"})
+@Version(1.21f)
+@DependsOn(values={"com.android.support:support-v4", "kotlin-stdlib-1.6.10"})
 @Events(values={"PageSelected (Position As Int)"})
 @DesignerProperties(values = {
 		@Property(key="TabHeight", displayName="Tab Height", fieldType="Int", defaultValue="50"),

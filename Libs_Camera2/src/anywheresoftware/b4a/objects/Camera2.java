@@ -46,6 +46,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
+import anywheresoftware.b4a.BA.DependsOn;
 import anywheresoftware.b4a.BA.Events;
 import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.Permissions;
@@ -57,12 +58,13 @@ import anywheresoftware.b4a.objects.collections.List;
 /**
  * Camera library based on Camera2 API. It should be used together with CamEx2 class.
  */
-@Version(1.11f)
+@Version(1.12f)
 @ShortName("Camera2")
 @Permissions(values={"android.permission.CAMERA"})
 @Events(values={"PictureTaken (Data() As Byte)", "CameraState (Open As Boolean)", "CameraClosed", "SurfaceReady",
 		"SessionConfigured (Success As Boolean)", "PreviewCaptureComplete (CaptureResult As Object)", "PreviewTaken (Image As Object)",
 "CaptureComplete (CaptureResult As Object)"})
+@DependsOn(values= {"kotlin-stdlib-1.6.10"})
 public class Camera2 {
 	@Hide
 	public CameraManager cameraManager;

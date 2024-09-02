@@ -51,12 +51,16 @@ import anywheresoftware.b4a.objects.collections.Map;
  * This library replaces the BLE library. It allows you to search for and connect to BLE devices.
  *It is supported by Android 4.3+ (API 18).
  */
-@Version(1.40f)
+@Version(1.41f)
 @ShortName("BleManager2")
 @Events(values={"StateChanged (State As Int)", "DeviceFound (Name As String, DeviceId As String, AdvertisingData As Map, RSSI As Double)",
 		"Disconnected", "Connected (Services As List)", "DataAvailable (ServiceId As String, Characteristics As Map)",
 		"WriteComplete (Characteristic As String, Status As Int)",
-"RssiAvailable (Success As Boolean, RSSI As Double)", "MtuChanged (Success As Boolean, MTU As Int)"})
+"RssiAvailable (Success As Boolean, RSSI As Double)", "MtuChanged (Success As Boolean, MTU As Int)", 
+"DescriptorRead (Success As Boolean, Descriptor As Object)", 
+"DescriptorWrite (Success As Boolean, Descriptor As Object)", 
+"PhyRead (Success As Boolean, PhyTx As Int, PhyRx As Int)",
+"PhyUpdate (Success As Boolean, PhyTx As Int, PhyRx As Int)"})
 @Permissions(values={"android.permission.BLUETOOTH", "android.permission.BLUETOOTH_ADMIN"})
 public class BleManager2 {
 	private String eventName;
@@ -129,7 +133,7 @@ public class BleManager2 {
 	}
 	/**
 	 * Starts scanning for devices. The DeviceFound event will be raised when a device is found.
-	 *ServiceUUIDs - A list (or array) with service uuids. Devices that don't advertise these uuids will not be discovered.
+	 *ServiceUUIDs - A list with service uuids. Devices that don't advertise these uuids will not be discovered. Note that <b>all</b> of the UUIDs must be advertised. 
 	 *Pass Null to discover all devices.
 	 */
 	public void Scan(List ServiceUUIDs) {
@@ -433,7 +437,22 @@ public class BleManager2 {
 	}
 
 	class GattCallback extends BluetoothGattCallback {
-
+		@Override
+		public void onDescriptorRead (BluetoothGatt gatt, 
+                BluetoothGattDescriptor descriptor, 
+                int status) {
+			ba.raiseEventFromDifferentThread(BleManager2.this,null, 0, eventName + "_descriptorread", false, 
+					new Object[] {status == BluetoothGatt.GATT_SUCCESS, descriptor});
+			
+		}
+		@Override
+		public void onDescriptorWrite (BluetoothGatt gatt, 
+                BluetoothGattDescriptor descriptor, 
+                int status) {
+			ba.raiseEventFromDifferentThread(BleManager2.this,null, 0, eventName + "_descriptorwrite", false, 
+					new Object[] {status == BluetoothGatt.GATT_SUCCESS, descriptor});
+		}
+		
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status,
 				int newState) {
@@ -532,12 +551,23 @@ public class BleManager2 {
 					new Object[] {characteristic.getService().getUuid().toString(), data});
 
 		}
-
-
 		@Override
-		public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor,
-				int status) {
+		public void onPhyRead (BluetoothGatt gatt, 
+                int txPhy, 
+                int rxPhy, 
+                int status) {
+			ba.raiseEventFromDifferentThread(BleManager2.this, null, 0, eventName + "_phyread", false, 
+					new Object[] {status == BluetoothGatt.GATT_SUCCESS, txPhy, rxPhy});
 		}
+		@Override
+		public void onPhyUpdate (BluetoothGatt gatt, 
+                int txPhy, 
+                int rxPhy, 
+                int status) {
+			ba.raiseEventFromDifferentThread(BleManager2.this, null, 0, eventName + "_phyupdate", false, 
+					new Object[] {status == BluetoothGatt.GATT_SUCCESS, txPhy, rxPhy});
+		}
+
 
 	}
 

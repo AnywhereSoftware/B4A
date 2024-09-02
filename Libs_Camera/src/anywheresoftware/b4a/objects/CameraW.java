@@ -31,6 +31,7 @@ import android.view.SurfaceView;
 import android.view.ViewGroup;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.ActivityObject;
+import anywheresoftware.b4a.BA.DependsOn;
 import anywheresoftware.b4a.BA.Events;
 import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.Permissions;
@@ -47,7 +48,8 @@ import anywheresoftware.b4a.keywords.Common;
 @ActivityObject
 @Permissions(values={"android.permission.CAMERA"})
 @ShortName("Camera")
-@Version(2.20f)
+@Version(2.21f)
+@DependsOn(values= {"kotlin-stdlib-1.6.10"})
 @Events(values={"Ready (Success As Boolean)", "PictureTaken (Data() As Byte)",
 "Preview (Data() As Byte)", "FocusDone (Success As Boolean)"})
 public class CameraW {

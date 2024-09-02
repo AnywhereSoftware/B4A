@@ -31,6 +31,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.BaseColumns;
@@ -41,6 +42,7 @@ import android.telephony.TelephonyManager;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.Events;
+import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.Permissions;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.objects.IntentWrapper;
@@ -300,14 +302,22 @@ public class PhoneEvents {
 				f1.addAction(ah.action);
 			}
 		}
-		BA.applicationContext.registerReceiver(br, f1);
+		registerReceiver(br, f1, true);
 		if (f2 != null) {
-			BA.applicationContext.registerReceiver(br, f2);
+			registerReceiver(br, f2, true);
 		}
 
-
-
 	}
+	
+	@Hide
+	public static void registerReceiver(BroadcastReceiver br, IntentFilter fi, boolean exported) {
+		if (Build.VERSION.SDK_INT >= 33) {
+			BA.applicationContext.registerReceiver(br, fi, exported ? Context.RECEIVER_EXPORTED : Context.RECEIVER_NOT_EXPORTED);
+		} else {
+			BA.applicationContext.registerReceiver(br, fi);
+		}
+	}
+	
 	/**
 	 * Stops listening for events. You can later call Initialize to start listening for events again.
 	 */
@@ -421,7 +431,7 @@ public class PhoneEvents {
 			};
 			IntentFilter fil = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
 			fil.setPriority(Priority);
-			BA.applicationContext.registerReceiver(br, fil);
+			registerReceiver(br, fil, true);
 		}
 		
 		/**

@@ -47,14 +47,15 @@ import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
-@Version(3.00f)
+@Version(3.02f)
 @ShortName("AdView")
 @Events(values={"ReceiveAd", "FailedToReceiveAd (ErrorCode As String)",
 		"AdScreenDismissed", "PresentScreen"})
 	@ActivityObject
 	@DontInheritEvents
 	@Permissions(values={"android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE", "com.google.android.gms.permission.AD_ID"})
-	@DependsOn(values={"com.google.firebase:firebase-ads", "gson-2.8.5", "GoogleConsent.aar"})
+	@DependsOn(values={"com.google.firebase:firebase-ads", "gson-2.8.5", "GoogleConsent.aar", "kotlin-stdlib-1.6.10",
+			"org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"})
 	public class AdViewWrapper extends ViewWrapper<AdView> {
 	/**
 	 * 320dip x 50dip (default size)
@@ -164,7 +165,7 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 	
 	@ShortName("InterstitialAd")
 	@Events(values={"ReceiveAd", "FailedToReceiveAd (ErrorCode As String)",
-			"AdClosed", "AdOpened"})
+			"AdClosed", "AdOpened", "AdClicked"})
 	@ActivityObject
 	public static class InterstitialAdWrapper {
 		@Hide
@@ -232,6 +233,10 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 				  public void onAdShowedFullScreenContent() {
 				    loadedAd = null;
 				    ba.raiseEventFromDifferentThread(InterstitialAdWrapper.this, null, 0, EventName + "_adopened", false, null);
+				  }
+				  @Override
+				  public void onAdClicked() {
+					  ba.raiseEventFromDifferentThread(InterstitialAdWrapper.this, null, 0, EventName + "_adclicked", false, null);
 				  }
 
 			});

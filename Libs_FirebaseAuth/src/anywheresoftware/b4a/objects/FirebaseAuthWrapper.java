@@ -50,9 +50,11 @@ import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.BA.ShortName;
 
 @ShortName("FirebaseAuth")
-@DependsOn(values={"com.google.firebase:firebase-auth", "com.google.android.gms:play-services-auth", "com.google.firebase:firebase-core"})
+@DependsOn(values={"com.google.firebase:firebase-auth", "com.google.android.gms:play-services-auth", "com.google.firebase:firebase-core",
+		"kotlin-stdlib-1.6.10.jar", "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+		, "androidx.loader:loader"})
 @Events(values={"SignedIn (User As FirebaseUser)", "TokenAvailable (User As FirebaseUser, Success As Boolean, TokenId As String)", "SignError (Error As Exception)"})
-@Version(3.00f)
+@Version(3.01f)
 public class FirebaseAuthWrapper  {
 	@Hide
 	public FirebaseAuth auth;

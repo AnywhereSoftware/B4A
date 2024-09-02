@@ -66,7 +66,7 @@ import anywheresoftware.b4a.objects.collections.Map;
 
 @ShortName("MapFragment")
 @ActivityObject
-@DependsOn(values={"com.google.android.gms:play-services-maps"})
+@DependsOn(values={"com.google.android.gms:play-services-maps", "kotlin-stdlib-1.6.10"})
 @Events(values={"Ready", 
 		"CameraChange (Position As CameraPosition)"
 		, "Click (Point As LatLng)"
@@ -75,7 +75,7 @@ import anywheresoftware.b4a.objects.collections.Map;
 		@Permissions(values={"android.permission.INTERNET",
 				"com.google.android.providers.gsf.permission.READ_GSERVICES", "android.permission.ACCESS_COARSE_LOCATION",
 				"android.permission.ACCESS_FINE_LOCATION", "$PACKAGE$.permission.MAPS_RECEIVE", "android.permission.ACCESS_NETWORK_STATE"})
-	@Version(2.50f)
+	@Version(2.51f)
 	@DesignerProperties(values={
 			@Property(key="MapType", displayName = "Map Type", fieldType="String", defaultValue="NORMAL", list="NORMAL|SATELLITE|TERRAIN"),
 			@Property(key="TrafficEnabled", displayName = "Traffic Enabled", fieldType="Boolean", defaultValue="False", description="Whether to show the traffic layer."),

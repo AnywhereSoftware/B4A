@@ -32,6 +32,7 @@ import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.ConsumeResponseListener;
+import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.ProductDetails.OneTimePurchaseOfferDetails;
 import com.android.billingclient.api.ProductDetailsResponseListener;
@@ -65,19 +66,20 @@ import anywheresoftware.b4a.BA.Version;
 		"ConsumeCompleted (Result As BillingResult)",
 "AcknowledgeCompleted (Result As BillingResult)"})
 @Permissions(values= {"com.android.vending.BILLING"})
-@Version(5.21f)
-@DependsOn(values = { "billing-5.2.1.aar" })
+@Version(7.02f)
+@DependsOn(values = { "billing-7.0.0.aar" , "kotlin-stdlib-1.6.10"})
 @ShortName("BillingClient")
 public class BillingClientWrapper {
 	private String eventName;
 	@Hide
 	public BillingClient client;
+	
 
 	/**
 	 * Initializes the billing client.
 	 */
 	public void Initialize(BA ba, String EventName) {
-		InitializeWithBuilder(ba, EventName, BillingClient.newBuilder(ba.context).enablePendingPurchases());
+		InitializeWithBuilder(ba, EventName, BillingClient.newBuilder(ba.context).enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()));
 	}
 	/**
 	 * Alternative initialization method that accepts a custom client builder.

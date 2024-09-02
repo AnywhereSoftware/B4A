@@ -44,8 +44,8 @@ import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.objects.streams.File;
 
-@DependsOn(values={"com.google.firebase:firebase-storage", "com.google.firebase:firebase-auth"})
-@Version(3.00f)
+@DependsOn(values={"com.google.firebase:firebase-storage", "com.google.firebase:firebase-auth", "kotlin-stdlib-1.6.10"})
+@Version(3.01f)
 @ShortName("FirebaseStorage")
 @Events(values={"UploadCompleted (ServerPath As String, Success As Boolean)",
 		"DownloadCompleted (ServerPath As String, Success As Boolean)", 
