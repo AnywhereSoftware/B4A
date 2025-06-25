@@ -70,7 +70,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(12.8f)
+@Version(13.20f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -745,6 +745,59 @@ public class Common {
 	public static void ProgressDialogHide() {
 		Msgbox.dismissProgressDialog();
 	}
+	
+	/**
+	 * Tests whether the given object is not null and initialized (if it has such method or field).
+	 *If there is no such method or field then only null is tested.
+	 */
+	public static boolean Initialized (Object Object) {
+		return !NotInitialized(Object);
+	}
+	private static final java.util.Map<Class<?>, Integer> testedClassesForIsInitialized = new HashMap<Class<?>, Integer>();
+	/**
+	 * Tests whether the given object is null or is not initialized (if it has such method or field).
+	 *If there is no such method or field then only null is tested.
+	 */
+	public static boolean NotInitialized (Object Object) {
+		if (Object == null)
+			return true;
+		if (Object instanceof ObjectWrapper) {
+			return ((ObjectWrapper<?>)Object).getObjectOrNull() == null;
+		} else if (Object instanceof B4AClass) {
+			return !((B4AClass)Object).IsInitialized();
+		} else {
+			Class<?> cls = Object.getClass();
+			Integer b = testedClassesForIsInitialized.get(cls);
+			if (b == null || b.intValue() > 0) {
+				Object o = null;
+				if (b == null || b.intValue() == 1) {
+					try {
+						o = cls.getMethod("IsInitialized").invoke(Object);
+						if (b == null && o instanceof Boolean)
+							testedClassesForIsInitialized.put(cls, 1);
+					} catch (Exception e) {
+						//ignore
+					}
+				}
+				if (o == null && (b == null || b.intValue() == 2)) {
+					try {
+						o = cls.getField("IsInitialized").get(Object);
+						if (b == null && o instanceof Boolean)
+							testedClassesForIsInitialized.put(cls, 2);
+					}catch (Exception e) {
+						//ignore
+					}
+				}
+				if (b == null && (o == null || (o instanceof Boolean) == false))
+					testedClassesForIsInitialized.put(cls, 0);
+				else
+					return !((Boolean)o).booleanValue();
+			}
+		}
+		return false;
+	}
+
+	
 	/**
 	 * Returns a string representing the object's java type.
 	 */
@@ -1714,7 +1767,7 @@ public class Common {
 
 	}
 	/**
-	 * Inline If - returns TrueValue if Condition is True and False otherwise. Only the relevant expression is evaluated. 
+	 * Inline If - returns TrueValue if Condition is True and FalseValue otherwise. Only the relevant expression is evaluated. 
 	 */
 	public static Object IIf (boolean Condition, Object TrueValue, Object FalseValue) {
 		return null;

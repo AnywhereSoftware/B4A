@@ -31,6 +31,7 @@ import android.net.sip.SipManager;
 import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
 import android.net.sip.SipAudioCall.Listener;
+import android.os.Build;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BA.ActivityObject;
@@ -59,7 +60,7 @@ import anywheresoftware.b4a.keywords.Common;
 				"CallError (ErrorCode As Int, ErrorMessage As String)",
 				"CallRinging (IncomingCall As SipAudioCall)"
 		})
-		@Version(1.0f)
+		@Version(1.02f)
 		public class SIP {
 
 
@@ -182,7 +183,10 @@ import anywheresoftware.b4a.keywords.Common;
 		me = builder.build();
 		Intent in = new Intent();
 		in.setAction("android.SipDemo.INCOMING_CALL");
-		PendingIntent pi = PendingIntent.getBroadcast(BA.applicationContext, 0, in, Intent.FILL_IN_DATA);
+		int flags = Intent.FILL_IN_DATA;
+		if (Build.VERSION.SDK_INT >= 31)
+			flags |= 0x2000000; //FLAG_MUTABLE
+		PendingIntent pi = PendingIntent.getBroadcast(BA.applicationContext, 0, in, flags);
 		manager.open(me, pi, null);	
 		manager.setRegistrationListener(me.getUriString(), new SipRegistrationListener() {
 			public void onRegistering(String localProfileUri) {

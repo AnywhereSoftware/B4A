@@ -163,6 +163,16 @@ public class WebViewWrapper extends ViewWrapper<WebView>{
 		return getObject().getSettings().getBuiltInZoomControls();
 	}
 	/**
+	 * Gets or sets whether WebView can access the file system. This option was enabled by default in the past and is now disabled due to security concerns.
+	 *Do not enable if your app accepts arbitrary URLs from external sources.
+	 */
+	public boolean getAllowFileAccess() {
+		return getObject().getSettings().getAllowFileAccess();
+	}
+	public void setAllowFileAccess(boolean b) {
+		getObject().getSettings().setAllowFileAccess(b);
+	}
+	/**
 	 * Zooms in or out according to the value of In.
 	 *Returns true if zoom has changed.
 	 */
