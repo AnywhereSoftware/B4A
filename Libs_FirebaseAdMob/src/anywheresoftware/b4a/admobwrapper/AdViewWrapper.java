@@ -47,15 +47,14 @@ import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
-@Version(3.02f)
+@Version(3.20f)
 @ShortName("AdView")
 @Events(values={"ReceiveAd", "FailedToReceiveAd (ErrorCode As String)",
 		"AdScreenDismissed", "PresentScreen"})
 	@ActivityObject
 	@DontInheritEvents
 	@Permissions(values={"android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE", "com.google.android.gms.permission.AD_ID"})
-	@DependsOn(values={"com.google.firebase:firebase-ads", "gson-2.8.5", "GoogleConsent.aar", "kotlin-stdlib-1.6.10",
-			"org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"})
+	@DependsOn(values={"com.google.firebase:firebase-ads", "gson-2.8.5", "GoogleConsent.aar"})
 	public class AdViewWrapper extends ViewWrapper<AdView> {
 	/**
 	 * 320dip x 50dip (default size)

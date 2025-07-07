@@ -138,19 +138,7 @@ public class Map extends AbsObjectWrapper<java.util.Map> implements B4aDebuggabl
 	 */
 	public IterableList Keys()
 	{
-		return new IterableList() {
-
-			@Override
-			public Object Get(int index) {
-				return Map.this.GetKeyAt(index);
-			}
-
-			@Override
-			public int getSize() {
-				return Map.this.getSize();
-			}
-			
-		};
+		return new IterableMap(true);
 	}
 	/**
 	 * Returns an object which can be used to iterate over all the values with a For Each block.
@@ -161,20 +149,28 @@ public class Map extends AbsObjectWrapper<java.util.Map> implements B4aDebuggabl
 	 */
 	public IterableList Values()
 	{
-		return new IterableList() {
-
-			@Override
-			public Object Get(int index) {
-				return Map.this.GetValueAt(index);
-			}
-
-			@Override
-			public int getSize() {
-				return Map.this.getSize();
-			}
-			
-		};
+		return new IterableMap(false);
 	}
+	@Hide
+	public class IterableMap implements IterableList {
+		private final Iterator iterator;
+		public IterableMap(boolean keys) {
+			if (keys)
+				iterator = getObject().keySet().iterator();
+			else
+				iterator = getObject().values().iterator();
+		}
+		@Override
+		public int getSize() {
+			return Map.this.getSize();
+		}
+
+		@Override
+		public Object Get(int index) {
+			return iterator.next();
+		}
+	}
+	
 	
 	@Hide
 	@Override

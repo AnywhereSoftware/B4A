@@ -100,8 +100,8 @@ public class FirebaseNotificationsService extends FirebaseMessagingService{
 	}
 
 	@DependsOn(values={"com.google.firebase:firebase-messaging", "com.google.firebase:firebase-core", "kotlin-stdlib-1.6.10",
-			"org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"})
-	@Version(3.11f)
+			"org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", "com.google.android.datatransport:transport-api", "com.google.android.gms:play-services-cloud-messaging"})
+	@Version(3.20f)
 	@ShortName("FirebaseMessaging")
 	@Events(values={"TokenRefresh (Token As String)", "MessageArrived (Message As RemoteMessage)"})
 	public static class FirebaseMessageWrapper extends AbsObjectWrapper<FirebaseMessaging> {

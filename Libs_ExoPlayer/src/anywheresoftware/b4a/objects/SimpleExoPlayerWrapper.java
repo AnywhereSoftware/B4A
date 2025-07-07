@@ -54,7 +54,7 @@ import anywheresoftware.b4a.objects.streams.File;
  */
 @SuppressWarnings("deprecation")
 @ShortName("SimpleExoPlayer")
-@Version(3.02f)
+@Version(3.10f)
 @DependsOn(values={
 		"media3-common-1.2.0.aar",
 		"media3-container-1.2.0.aar",
@@ -69,7 +69,7 @@ import anywheresoftware.b4a.objects.streams.File;
 		"media3-extractor-1.2.0.aar",
 		"media3-ui-1.2.0.aar",
 		"androidx.media:media", "androidx.recyclerview:recyclerview","androidx.customview:customview-poolingcontainer",  
-		"com.google.guava-guava"})
+		"com.google.guava-guava", "androidx.tracing:tracing-android", "androidx.collection:collection"})
 @Permissions(values = {"android.permission.INTERNET"})
 @Events(values = {"Complete", "Error (Message As String)", "Ready", "TrackChanged"})
 public class SimpleExoPlayerWrapper  {

@@ -54,7 +54,7 @@ import anywheresoftware.b4a.BA.ShortName;
 		"kotlin-stdlib-1.6.10.jar", "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
 		, "androidx.loader:loader"})
 @Events(values={"SignedIn (User As FirebaseUser)", "TokenAvailable (User As FirebaseUser, Success As Boolean, TokenId As String)", "SignError (Error As Exception)"})
-@Version(3.01f)
+@Version(3.20f)
 public class FirebaseAuthWrapper  {
 	@Hide
 	public FirebaseAuth auth;

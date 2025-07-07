@@ -33,9 +33,9 @@ import anywheresoftware.b4a.BA.Version;
 import anywheresoftware.b4a.objects.collections.Map;
 
 @ShortName("FirebaseAnalytics")
-@Version(3.01f)
+@Version(3.20f)
 @DependsOn(values={"com.google.android.gms:play-services-measurement", "com.google.firebase:firebase-common", "com.google.android.gms:play-services-measurement-api", "kotlin-stdlib-1.6.10",
-		"org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"})
+		"org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", "com.google.android.datatransport:transport-runtime", "com.google.android.datatransport:transport-api", "com.google.android.datatransport:transport-backend-cct"})
 public class FirebaseAnalyticsWrapper extends AbsObjectWrapper<FirebaseAnalytics>{
 	/**
 	 * Initializes the object. FirebaseAnalytics should be 

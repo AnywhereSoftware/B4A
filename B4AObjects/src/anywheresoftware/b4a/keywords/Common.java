@@ -70,7 +70,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(13.20f)
+@Version(13.40f)
 public class Common {
 	static {
 		System.out.println("common created.");
