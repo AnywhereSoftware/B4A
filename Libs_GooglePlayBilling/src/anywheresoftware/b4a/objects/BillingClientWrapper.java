@@ -41,6 +41,7 @@ import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryProductDetailsParams.Product;
+import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
 
 import android.app.Activity;
@@ -66,8 +67,8 @@ import anywheresoftware.b4a.BA.Version;
 		"ConsumeCompleted (Result As BillingResult)",
 "AcknowledgeCompleted (Result As BillingResult)"})
 @Permissions(values= {"com.android.vending.BILLING"})
-@Version(7.02f)
-@DependsOn(values = { "billing-7.0.0.aar" , "kotlin-stdlib-1.6.10"})
+@Version(8.0f)
+@DependsOn(values = { "billing-8.0.0.aar" , "kotlin-stdlib-1.6.10"})
 @ShortName("BillingClient")
 public class BillingClientWrapper {
 	private String eventName;
@@ -165,14 +166,15 @@ public class BillingClientWrapper {
 				new ProductDetailsResponseListener() {
 					
 					@Override
-					public void onProductDetailsResponse(BillingResult var1, List<ProductDetails> var2) {
+					public void onProductDetailsResponse(BillingResult var1, QueryProductDetailsResult var2) {
 						anywheresoftware.b4a.objects.collections.List res = new anywheresoftware.b4a.objects.collections.List();
-						if (var2 != null)
-							res.setObject((List)var2);
+						if (var2 != null && var2.getProductDetailsList() != null)
+							res.setObject((List)var2.getProductDetailsList());
 						ba.raiseEventFromDifferentThread(sender, null, 0, eventName + "_skuquerycompleted", true,
 								new Object[] { AbsObjectWrapper.ConvertToWrapper(new BillingResultWrapper(), var1),
 										res });
 					}
+
 				});
 
 		return sender;

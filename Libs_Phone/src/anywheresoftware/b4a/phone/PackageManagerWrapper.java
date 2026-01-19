@@ -15,7 +15,7 @@
  * limitations under the License.
  */
  
- package anywheresoftware.b4a.phone;
+package anywheresoftware.b4a.phone;
 
 import android.content.ComponentName;
 import android.content.Intent;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
  
- package anywheresoftware.b4a.phone;
+package anywheresoftware.b4a.phone;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +61,7 @@ import anywheresoftware.b4a.objects.ActivityWrapper;
 import anywheresoftware.b4a.objects.collections.List;
 
 @ShortName("Phone")
-@Version(2.60f)
+@Version(2.61f)
 public class Phone {
 	
 	/**
@@ -676,7 +676,9 @@ public class Phone {
 			Intent i1 = new Intent("b4a.smssent");
 			i1.putExtra("phone", PhoneNumber);
 			int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-			if (Build.VERSION.SDK_INT >= 31)
+			if (Build.VERSION.SDK_INT >= 35)
+				flags |= 1<<26; //FLAG_IMMUTABLE
+			else if (Build.VERSION.SDK_INT >= 31)
 				flags |= 33554432; //FLAG_MUTABLE
 			PendingIntent pi = ReceiveSentNotification ? PendingIntent.getBroadcast(BA.applicationContext, 0,i1, flags) : null;
 			Intent i2 = new Intent("b4a.smsdelivered");
