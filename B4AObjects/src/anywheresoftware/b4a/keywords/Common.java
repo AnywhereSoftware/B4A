@@ -70,7 +70,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(13.40f)
+@Version(13.51f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -80,6 +80,8 @@ public class Common {
 	public static final boolean True = true;
 	public static final boolean False = false;
 	public static final Object Null = null;
+	@Hide
+	public static Locale stringLocale = Locale.US;
 	/**
 	 * New line character. The value of Chr(10).
 	 */

@@ -134,6 +134,16 @@ public class List extends AbsObjectWrapper<java.util.List<Object>> implements It
 	public int IndexOf(Object Item) {
 		return getObject().indexOf(Item);
 	}
+	
+	/**
+	 * Returns a read-only list, backed by this list, with the items starting from BeginIndex (inclusive) and ending with EndIndex (exclusive).
+	 */
+	public List SubList(int BeginIndex, int EndIndex) {
+		List res = new List();
+		res.setObject(Collections.unmodifiableList((getObject().subList(BeginIndex, EndIndex))));
+		return res;
+	}
+	
 	/**
 	 * Sorts the list.
 	 *The items must all be numbers or strings.
