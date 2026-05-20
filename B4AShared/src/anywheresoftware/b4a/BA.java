@@ -240,13 +240,12 @@ public class BA {
 				}
 			}
 
-			String sub = printException(e, !debugMode); //already printed in debug
+			printException(e, !debugMode); //already printed in debug
 			if (!debugMode) {
 				try {
-					Boolean b = (Boolean) Class.forName("anywheresoftware.b4a.objects.ServiceHelper$StarterHelper")
+					Class.forName("anywheresoftware.b4a.objects.ServiceHelper$StarterHelper")
 							.getDeclaredMethod("handleUncaughtException", Throwable.class, BA.class).invoke(null, e, this);
-					if (Boolean.TRUE.equals(b))
-						return null;
+					return null;
 				} catch (Exception e1) {
 					throw new RuntimeException(e1);
 				}
@@ -256,7 +255,6 @@ public class BA {
 			}
 			if (sharedProcessBA.activityBA == null)
 				throw new RuntimeException(e);
-			ShowErrorMsgbox(e.toString(), sub);
 		}
 		finally {
 			sharedProcessBA.numberOfStackedEvents--;
@@ -280,28 +278,7 @@ public class BA {
 		}
 		return false;
 	}
-	public void ShowErrorMsgbox(String errorMessage, String sub) {
-		sharedProcessBA.ignoreEventsFromOtherThreadsDuringMsgboxError = true;
-		try {
-			LogError(errorMessage);
-			AlertDialog.Builder builder = new AlertDialog.Builder(sharedProcessBA.activityBA.get().context);
-			builder.setTitle("Error occurred");
-			String msg = sub != null ? "An error has occurred in sub:" + sub + "\n" : "";
-			msg = msg + errorMessage + "\nContinue?";
-			builder.setMessage(msg);
-			Msgbox.DialogResponse dr = new Msgbox.DialogResponse(false);
-			builder.setPositiveButton("Yes", dr);
-			builder.setNegativeButton("No", dr);
-			Msgbox.msgbox(builder.create(), sharedProcessBA.numberOfStackedEvents == 1);
-			if (dr.res == DialogInterface.BUTTON_NEGATIVE) {
-				Process.killProcess(Process.myPid());
-				System.exit(0);
-			} 
-		} 
-		finally {
-			sharedProcessBA.ignoreEventsFromOtherThreadsDuringMsgboxError = false;
-		}
-	}
+	
 	public static String printException(Throwable e, boolean print) {
 		String sub = "";
 		if (!BA.shellMode) {

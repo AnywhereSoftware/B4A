@@ -45,6 +45,7 @@ public class ServiceHelper {
 	}
 	private Service service;
 	NotificationManager mNM;
+	private static boolean noStarter;
 
 	/**
 	 * Never enter automatic foreground mode. This means that you must handle it yourself to avoid the app from crashing.
@@ -127,7 +128,7 @@ public class ServiceHelper {
 			}
 			if (Build.VERSION.SDK_INT < 26 || foreground) {
 				try {
-				context.startService(intent);
+					context.startService(intent);
 				} catch (IllegalStateException i) {
 					if (Build.VERSION.SDK_INT >= 26) {
 						intent.putExtra(FOREGROUND_KEY, true);
@@ -191,6 +192,7 @@ public class ServiceHelper {
 		 * Returns true if already run
 		 */
 		public static boolean startFromActivity(Activity act, BA ba, Runnable waitForLayout, boolean noStarter) {
+			ServiceHelper.noStarter = noStarter;
 			if (alreadyRun || noStarter)
 				return true;
 			alreadyRun = true;
@@ -202,8 +204,9 @@ public class ServiceHelper {
 			}
 			return false;
 		}
-	
+
 		public static boolean startFromServiceCreate(BA ba, boolean noStarter) {
+			ServiceHelper.noStarter = noStarter;
 			if (alreadyRun || noStarter)
 				return true;
 			alreadyRun = true;
@@ -242,42 +245,43 @@ public class ServiceHelper {
 			}
 		}
 		private static boolean insideHandler;
-		public static boolean handleUncaughtException(Throwable t, BA ba) throws Exception {
+
+		public static void handleUncaughtException(Throwable t, BA ba) throws Exception {
 			if (insideHandler) {
 				Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
-				return true;
+				return;
 			}
 			try {
 				insideHandler = true;
-				if (alreadyRun) {
-					if (Common.SubExists(ba, "starter", "application_error") == false)
-						return false;
-					if (Common.IsPaused(ba, "starter")) {
-						Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
-						return true;
+				if (noStarter || alreadyRun) {
+					String module = noStarter ? "main" : "starter";
+					if (Common.SubExists(ba, module, "application_error")) {
+						if (!noStarter && Common.IsPaused(ba, "starter")) {
+							Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
+							return;
+						}
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
+						PrintWriter pw = new PrintWriter(out);
+						t.printStackTrace(pw);
+						pw.close();
+						byte[] b = out.toByteArray();
+						B4AException exc = new B4AException();
+						if (t instanceof Exception)
+							exc.setObject((Exception)t);
+						else
+							exc.setObject(new Exception(t));
+						BA targetBA = Common.getComponentBA(ba, module);
+						Boolean res = (Boolean)targetBA.raiseEvent2(null, true, "application_error", false, exc, Common.BytesToString(b, 0, b.length, "UTF8"));
+						if (Boolean.FALSE.equals(res)) {
+							return; ///<--- only case where execution continues.
+						}
 					}
-					ByteArrayOutputStream out = new ByteArrayOutputStream();
-					PrintWriter pw = new PrintWriter(out);
-					t.printStackTrace(pw);
-					pw.close();
-					byte[] b = out.toByteArray();
-					B4AException exc = new B4AException();
-					if (t instanceof Exception)
-						exc.setObject((Exception)t);
-					else
-						exc.setObject(new Exception(t));
-
-					Boolean res = (Boolean) Common.CallSubNew3(ba, "starter", "application_error", exc, Common.BytesToString(b, 0, b.length, "UTF8"));
-					if (Boolean.TRUE.equals(res)) {
-						UncaughtExceptionHandler handler = Thread.getDefaultUncaughtExceptionHandler();
-						if (handler instanceof B4AExceptionHandler) {
-							((B4AExceptionHandler)handler).original.uncaughtException(Thread.currentThread(), t);
-						} else
-							handler.uncaughtException(Thread.currentThread(), t);
-					}
-					return true;
+					UncaughtExceptionHandler handler = Thread.getDefaultUncaughtExceptionHandler();
+					if (handler instanceof B4AExceptionHandler) {
+						((B4AExceptionHandler)handler).original.uncaughtException(Thread.currentThread(), t);
+					} else
+						handler.uncaughtException(Thread.currentThread(), t);
 				}
-				return false;
 			} finally {
 				insideHandler = false;
 			}
