@@ -50,6 +50,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Process;
 import android.util.Log;
+import android.view.View;
 import anywheresoftware.b4a.BA.SharedProcessBA.ModuleType;
 
 public class BA {
@@ -84,6 +85,7 @@ public class BA {
 	public final BALayout vg;
 	public final String className;
 	public final BA processBA; //from activity to process
+	public final int[] referenceSize; //only set for activityBA.
 
 	public static class SharedProcessBA {
 		public WeakReference<BA> activityBA; //from process to activity
@@ -106,7 +108,9 @@ public class BA {
 
 	}
 	public BA(BA otherBA, Object eventTarget, HashMap<String, Method> subs, String className) {
+		//otherBA can be processBA or activityBA.
 		this.vg = otherBA.vg;
+		this.referenceSize = otherBA.referenceSize;
 		this.eventsTarget = eventTarget;
 		this.htSubs = subs == null ? new HashMap<String, Method>() : subs;
 		this.processBA = null;
@@ -172,10 +176,14 @@ public class BA {
 		this.className = className;
 		this.processBA = processBA;
 		this.vg = vg;
-		if (processBA == null)
+		if (processBA == null) { //this is processBA
 			sharedProcessBA = new SharedProcessBA(moduleType);
-		else
+			referenceSize = null;
+		}
+		else {
 			sharedProcessBA = null;
+			referenceSize = new int[2];
+		}
 	}
 
 	public boolean subExists(String sub) {

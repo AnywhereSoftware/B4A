@@ -1,6 +1,6 @@
 
 /*
- * Copyright 2010 - 2020 Anywhere Software (www.b4x.com)
+ * Copyright 2010 - 2026 Anywhere Software (www.b4x.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- package anywheresoftware.b4h.okhttp;
+
+package anywheresoftware.b4h.okhttp;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +55,6 @@ import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.Route;
-import okhttp3.internal.Util;
 import okhttp3.internal.http.RequestLine;
 import okio.BufferedSink;
 import okio.Okio;
@@ -76,10 +75,10 @@ import anywheresoftware.b4a.objects.streams.File;
  */
 @Events(values={"ResponseSuccess (Response As OkHttpResponse, TaskId As Int)",
 "ResponseError (Response As OkHttpResponse, Reason As String, StatusCode As Int, TaskId As Int)"})
-@DependsOn(values={"okhttp-4.9.0", "okio-2.8.0", "okhttp-urlconnection-4.9.3", "kotlin-stdlib-1.6.10"})
+@DependsOn(values={"okhttp-5.4.0", "okio-3.17.0", "okhttp-urlconnection-5.4.0", "kotlin-stdlib-2.1.21", "okhttp-java-net-cookiejar-5.4.0.jar"})
 @ShortName("OkHttpClient")
 @Permissions(values = {"android.permission.INTERNET"})
-@Version(1.50f)
+@Version(2.00f)
 public class OkHttpClientWrapper {
 	@Hide
 	public OkHttpClient client;
@@ -123,7 +122,7 @@ public class OkHttpClientWrapper {
 		builder.sslSocketFactory(sslSocketFactory, trustManager);
 		client = builder.build();
 
-		
+
 
 	}
 	@Hide
@@ -171,17 +170,7 @@ public class OkHttpClientWrapper {
 	 */
 	private Response executeWithTimeout(final Runnable handler, OkHttpClient myClient, 
 			Request req, final BA ba,final int TaskId) throws IOException {
-		//try {
 		return myClient.newCall(req).execute();
-		//		} catch (ConnectionPoolTimeoutException cpte) {
-		//			BA.handler.postDelayed(new Runnable() {
-		//				@Override
-		//				public void run() {
-		//					ba.submitRunnable(handler, OkHttpClientWrapper.this, TaskId);
-		//				}
-		//			}, 2000);
-		//		}
-		//		return null;
 	}
 	class ExecuteHelper implements Runnable {
 		private BA ba;
@@ -367,8 +356,8 @@ public class OkHttpClientWrapper {
 			return key + "=" + (quote ? "\"" : "") + value + (quote ? "\"" : "");
 		}
 		private static final char[] HEXADECIMAL = {
-			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 
-			'e', 'f'
+				'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 
+				'e', 'f'
 		};
 		private static String encode(byte[] binaryData) {
 			if (binaryData.length != 16) {
@@ -632,9 +621,11 @@ public class OkHttpClientWrapper {
 		/**
 		 * Frees resources allocated for this object.
 		 */
-		public void Release() throws IOException {
-			if (response != null && response.body() != null)
-				Util.closeQuietly(response.body().source());
+		public void Release() {
+			if (response != null) {
+				response.close();
+				response = null;
+			}
 		}
 		/**
 		 * Asynchronously reads the response and writes it to the given OutputStream.
@@ -699,15 +690,15 @@ public class OkHttpClientWrapper {
 	{
 		public void checkClientTrusted ( X509Certificate[] cert, String authType )
 				throws CertificateException 
-				{
+		{
 			//
-				}
+		}
 
 		public void checkServerTrusted ( X509Certificate[] cert, String authType ) 
 				throws CertificateException 
-				{
+		{
 			//
-				}
+		}
 
 
 		public X509Certificate[] getAcceptedIssuers ()

@@ -70,7 +70,7 @@ import anywheresoftware.b4a.objects.streams.File;
  * These are the internal keywords.
  */
 @ActivityObject
-@Version(13.50f)
+@Version(13.70f)
 public class Common {
 	static {
 		System.out.println("common created.");
@@ -841,7 +841,7 @@ public class Common {
 	 */
 	public static int PerXToCurrent(float Percentage, BA ba)
 	{
-		return (int) (Percentage / 100f * ba.vg.getWidth());
+		return (int) (Percentage / 100f * (ba.referenceSize[0] == 0 ? ba.vg.getWidth() : ba.referenceSize[0]));
 	}
 	/**
 	 *Returns the actual size of the given percentage of the activity height.
@@ -855,7 +855,7 @@ public class Common {
 	 */
 	public static int PerYToCurrent(float Percentage, BA ba)
 	{
-		return (int) (Percentage / 100f * ba.vg.getHeight());
+		return (int) (Percentage / 100f * (ba.referenceSize[1] == 0 ? ba.vg.getHeight() : ba.referenceSize[1]));
 	}
 	/**
 	 * Tests whether the specified string can be safely parsed as a number.
@@ -1767,6 +1767,12 @@ public class Common {
 	 */
 	public static void Sleep(int Milliseconds) {
 
+	}
+	/**
+	 * Raises an exception.
+	 */
+	public static void ThrowException(String Message) {
+		throw new RuntimeException(Message);
 	}
 	/**
 	 * Inline If - returns TrueValue if Condition is True and FalseValue otherwise. Only the relevant expression is evaluated. 

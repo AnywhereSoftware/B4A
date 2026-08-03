@@ -833,7 +833,7 @@ public class B4XViewWrapper extends AbsObjectWrapper<Object>{
 		public static Object GetRegisteredDesignerClass(String Module) {
 			return DesignerArgs.targetsCache.get(Module.toLowerCase(BA.cul));
 		}
-
+		
 
 	}
 
