@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.os.Environment;
 import anywheresoftware.b4a.AbsObjectWrapper;
 import anywheresoftware.b4a.BA;
+import anywheresoftware.b4a.BA.DefaultValue;
 import anywheresoftware.b4a.BA.Hide;
 import anywheresoftware.b4a.BA.ShortName;
 import anywheresoftware.b4a.keywords.Bit;
@@ -441,7 +442,7 @@ public static Object CopyAsync(BA ba, final String DirSource, final String FileS
 	 * Opens (or creates) the specified file which is located in the Dir folder for writing.
 	 *If Append is true then the new data will be written at the end of the existing file.
 	 */
-	public static OutputStreamWrapper OpenOutput(String Dir, String FileName, boolean Append) throws FileNotFoundException {
+	public static OutputStreamWrapper OpenOutput(String Dir, String FileName, @DefaultValue("False") boolean Append) throws FileNotFoundException {
 		if (Dir == File.assetsDir)
 			throw new RuntimeException("The Assets folder is a read-only folder");
 		OutputStreamWrapper o = new OutputStreamWrapper();

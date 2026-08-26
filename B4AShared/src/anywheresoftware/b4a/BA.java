@@ -879,7 +879,12 @@ public class BA {
 		//		}
 	}
 	public static @interface Hide {}
+	@Hide
 	public static @interface Pixel {}
+	@Hide
+	public static @interface DefaultValue {
+		String value();
+	}
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface ShortName {
 		String value();

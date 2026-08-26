@@ -57,6 +57,7 @@ import anywheresoftware.b4a.BA;
 import anywheresoftware.b4a.BALayout;
 import anywheresoftware.b4a.BA.CustomClass;
 import anywheresoftware.b4a.BA.CustomClasses;
+import anywheresoftware.b4a.BA.DefaultValue;
 import anywheresoftware.b4a.ObjectWrapper;
 import anywheresoftware.b4a.BA.ActivityObject;
 import anywheresoftware.b4a.BA.Hide;
@@ -78,7 +79,7 @@ import anywheresoftware.b4a.objects.streams.File;
 @CustomClasses(values = {
 		@CustomClass(fileNameWithoutExtension="customview", name="Custom View (XUI)")	
 	})
-@Version(2.32f)
+@Version(2.35f)
 @ShortName("B4XView")
 @ActivityObject
 public class B4XViewWrapper extends AbsObjectWrapper<Object>{
@@ -806,7 +807,8 @@ public class B4XViewWrapper extends AbsObjectWrapper<Object>{
 		public static Object MsgboxAsync(BA ba, CharSequence Message, CharSequence Title) throws Exception {
 			return Common.Msgbox2Async(Message, Title, "OK", "", "",null, ba, true);
 		}
-		public static Object Msgbox2Async(final BA ba, CharSequence Message, CharSequence Title, String Positive, String Cancel, String Negative, BitmapWrapper Icon) {
+		public static Object Msgbox2Async(final BA ba, CharSequence Message, CharSequence Title,  @DefaultValue("Yes") String Positive, @DefaultValue("Cancel") String Cancel, 
+				 @DefaultValue("No")String Negative,  @DefaultValue("Null") BitmapWrapper Icon) {
 			return Common.Msgbox2Async(Message, Title, Positive, Cancel, Negative, Icon, ba, false);
 		}
 		public static String FileUri(String Dir, String FileName) throws IOException {
